@@ -1,0 +1,121 @@
+:root {
+  --bg: #0b132b;
+  --card: #1c2541;
+  --accent1: #5bc0be;
+  --accent2: #3a506b;
+  --muted: #a0aec0;
+}
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  background: linear-gradient(180deg, var(--bg), #000);
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.container {
+  width: 90%;
+  max-width: 500px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #5bc0be;
+}
+
+.tag {
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.plan-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.plan {
+  background: var(--card);
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.plan:hover {
+  border-color: var(--accent1);
+}
+
+.price {
+  color: #5bc0be;
+  font-weight: bold;
+}
+
+.field {
+  text-align: left;
+  margin-bottom: 12px;
+}
+
+.field span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.field input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg, #3a506b, #5bc0be);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+button:hover {
+  transform: scale(1.02);
+}
+
+.status {
+  margin-top: 10px;
+  font-size: 0.95rem;
+}
+
+.support {
+  margin-top: 15px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.footer {
+  margin-top: 20px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
