@@ -3,60 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FastWave Hotspot | Pay to Connect</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Matoka WiFi Hotspot</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to bottom right, #007bff, #00c6ff);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: white;
+      margin: 0;
+    }
+
+    .card {
+      background: white;
+      color: #333;
+      border-radius: 15px;
+      padding: 30px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    h1 {
+      color: #007bff;
+    }
+
+    .pay-details {
+      background: #f5f5f5;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 20px 0;
+      text-align: left;
+    }
+
+    .pay-details p {
+      margin: 8px 0;
+      font-size: 15px;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
 </head>
 <body>
-  <main class="container">
-    <header class="hero">
-      <img src="logo.png" alt="Hotspot Logo" class="logo" onerror="this.style.display='none'" />
-      <h1>FastWave Hotspot</h1>
-      <p class="tag">Instant Internet Access – Pay Securely via M-Pesa</p>
-    </header>
 
-    <section class="plans">
-      <h2>Choose a Plan</h2>
-      <div class="plan-grid">
-        <label class="plan">
-          <input type="radio" name="plan" value="30" checked />
-          <div>
-            <strong>30 Minutes</strong>
-            <div class="price">KES 20</div>
-          </div>
-        </label>
-        <label class="plan">
-          <input type="radio" name="plan" value="60" />
-          <div>
-            <strong>1 Hour</strong>
-            <div class="price">KES 50</div>
-          </div>
-        </label>
-        <label class="plan">
-          <input type="radio" name="plan" value="1440" />
-          <div>
-            <strong>1 Day</strong>
-            <div class="price">KES 200</div>
-          </div>
-        </label>
-      </div>
-    </section>
+  <div class="card">
+    <h1>Matoka WiFi</h1>
+    <p>Access fast internet in seconds!</p>
 
-    <section class="payment">
-      <h2>Pay with M-Pesa</h2>
-      <label class="field">
-        <span>Phone Number</span>
-        <input id="phone" type="tel" placeholder="2547XXXXXXXX" required />
-      </label>
-      <button id="payBtn">Pay & Connect</button>
-      <div id="status" class="status"></div>
-      <p class="support">Need help? <a href="https://wa.me/2547XXXXXXXX">Chat on WhatsApp</a></p>
-    </section>
+    <div class="pay-details">
+      <p><strong>Pay to:</strong> <br> <span style="color:#007bff;">0700 123 456</span></p>
+      <p><strong>Amount:</strong> KSh 20</p>
+      <p><strong>How to pay:</strong></p>
+      <ol>
+        <li>Go to M-PESA → Lipa na M-PESA</li>
+        <li>Select “Send Money”</li>
+        <li>Enter number: <b>0700 123 456</b></li>
+        <li>Enter amount: <b>KSh 20</b></li>
+        <li>Confirm and send</li>
+      </ol>
+    </div>
 
-    <footer class="footer">
-      © 2025 FastWave Hotspot | <a href="#">Terms & Conditions</a>
-    </footer>
-  </main>
+    <button onclick="confirmPayment()">I Have Paid</button>
+    <p id="msg" style="margin-top:15px;color:green;"></p>
+  </div>
 
-  <script src="script.js"></script>
+  <script>
+    function confirmPayment() {
+      document.getElementById("msg").innerText = "Thank you! Your payment will be verified shortly.";
+      // later you can redirect or unlock Wi-Fi here
+    }
+  </script>
 </body>
 </html>
