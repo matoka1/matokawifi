@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FastWave Hotspot | Pay to Connect</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="container">
+    <header class="hero">
+      <img src="logo.png" alt="Hotspot Logo" class="logo" onerror="this.style.display='none'" />
+      <h1>FastWave Hotspot</h1>
+      <p class="tag">Instant Internet Access – Pay Securely via M-Pesa</p>
+    </header>
+
+    <section class="plans">
+      <h2>Choose a Plan</h2>
+      <div class="plan-grid">
+        <label class="plan">
+          <input type="radio" name="plan" value="30" checked />
+          <div>
+            <strong>30 Minutes</strong>
+            <div class="price">KES 20</div>
+          </div>
+        </label>
+        <label class="plan">
+          <input type="radio" name="plan" value="60" />
+          <div>
+            <strong>1 Hour</strong>
+            <div class="price">KES 50</div>
+          </div>
+        </label>
+        <label class="plan">
+          <input type="radio" name="plan" value="1440" />
+          <div>
+            <strong>1 Day</strong>
+            <div class="price">KES 200</div>
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <section class="payment">
+      <h2>Pay with M-Pesa</h2>
+      <label class="field">
+        <span>Phone Number</span>
+        <input id="phone" type="tel" placeholder="2547XXXXXXXX" required />
+      </label>
+      <button id="payBtn">Pay & Connect</button>
+      <div id="status" class="status"></div>
+      <p class="support">Need help? <a href="https://wa.me/2547XXXXXXXX">Chat on WhatsApp</a></p>
+    </section>
+
+    <footer class="footer">
+      © 2025 FastWave Hotspot | <a href="#">Terms & Conditions</a>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
