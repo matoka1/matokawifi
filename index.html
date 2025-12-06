@@ -127,30 +127,47 @@
       show('Sending STK Push... please wait.');
       payBtn.disabled = true; // Disable button while processing
 
-      // *** IMPORTANT: This URL points to your deployed Supabase function ***
-      const SUPABASE_FUNCTION_URL = 'mbfbdehzvbxzktrxauuu.supabase.co';
+      // *** CORRECTED: Full URL to your Supabase Edge Function ***
+      const SUPABASE_FUNCTION_URL = 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/stk-push';
+      
+      // Your JWT token (moved from the URL to the Authorization header)
+      const SUPABASE_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iZmJkZWh6dmJ4emt0cnhhdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjczMzQsImV4cCI6MjA4MDYwMzMzNH0.R90SdMa_lv-24qmzIcvKcm_qJMbH2nU8pGhej99T7Q0';
 
       try {
-        const response = await fetch(SUPABASE_FUNCTION_URL, {
+        const response = await fetch(SUPABASE_FUNCTION_URL, {  // ← URL goes here
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            // ✅ CORRECT: Token goes in Authorization header
+            'Authorization': `Bearer ${SUPABASE_TOKEN}`
+          },
           body: JSON.stringify({
             phone: normalizedPhone,
             amount: amount,
           })
         });
 
+        // Check if response is JSON before parsing
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.error('Non-JSON response:', text);
+          throw new Error('Server returned non-JSON response');
+        }
+
         const data = await response.json();
+        
         // Check for success condition based on the response status
         if (!response.ok) {
-            throw new Error(data.errorMessage || data.message || 'Payment initiation failed.');
+            throw new Error(data.error || data.errorMessage || data.message || 'Payment initiation failed.');
         }
 
         show('STK Push sent! Check your phone and enter your M-Pesa PIN.');
         // Note: Actual Wi-Fi unlock logic happens when Lipana sends a webhook to your other function
 
       } catch (err) {
-        show(err.message || 'An error occurred', true);
+        console.error('Error:', err);
+        show(err.message || 'An error occurred. Please try again.', true);
       } finally {
         // Re-enable button after request is done
         payBtn.disabled = false;
