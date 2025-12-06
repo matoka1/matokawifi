@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Matoka WiFi Hotspot</title>
+  <title>Matoka WiFi - Connect</title>
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -15,6 +16,7 @@
       height: 100vh;
       color: white;
       margin: 0;
+      padding: 20px;
     }
 
     .card {
@@ -22,157 +24,243 @@
       color: #333;
       border-radius: 15px;
       padding: 30px;
-      width: 320px;
+      width: 350px;
       text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
 
     h1 {
       color: #007bff;
+      margin-bottom: 5px;
     }
 
-    .pay-details {
+    .subtitle {
+      color: #666;
+      margin-bottom: 25px;
+    }
+
+    .wifi-details {
       background: #f5f5f5;
       border-radius: 10px;
-      padding: 15px;
+      padding: 20px;
       margin: 20px 0;
       text-align: left;
     }
 
-    .pay-details p {
-      margin: 8px 0;
-      font-size: 15px;
-    }
-
-    /* Styles for the new input field */
-    .pay-details input {
-      width: 90%;
+    .wifi-item {
+      margin: 15px 0;
       padding: 10px;
-      margin-top: 5px;
-      margin-bottom: 15px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      box-sizing: border-box; /* Ensures padding is included in width */
+      background: white;
+      border-radius: 8px;
+      border-left: 4px solid #007bff;
     }
 
-    button {
+    .label {
+      font-weight: bold;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #007bff;
+      margin-top: 5px;
+      word-break: break-all;
+    }
+
+    .copy-btn {
       background: #007bff;
       color: white;
       border: none;
-      padding: 12px 20px;
-      font-size: 16px;
-      border-radius: 10px;
+      padding: 8px 15px;
+      border-radius: 5px;
       cursor: pointer;
+      font-size: 14px;
+      margin-top: 5px;
       transition: 0.3s;
     }
 
-    button:hover {
+    .copy-btn:hover {
       background: #0056b3;
     }
-    
-    button:disabled {
-        background: #a0a0a0;
-        cursor: not-allowed;
+
+    .instructions {
+      background: #fff8e1;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 20px 0;
+      text-align: left;
+      border-left: 4px solid #ffc107;
+    }
+
+    .instructions ol {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .instructions li {
+      margin: 8px 0;
+    }
+
+    .timer {
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
+    }
+
+    .success-icon {
+      font-size: 50px;
+      color: #4CAF50;
+      margin-bottom: 15px;
     }
   </style>
 </head>
 <body>
-
   <div class="card">
-    <h1>Matoka WiFi</h1>
-    <p>Access fast internet in seconds!</p>
-
-    <div class="pay-details">
-      <!-- Phone number input added -->
-      <label for="phone">Phone Number (2547...):</label>
-      <input type="tel" id="phone" placeholder="e.g., 254712345678">
+    <div class="success-icon">✓</div>
+    <h1>Payment Successful!</h1>
+    <p class="subtitle">Your WiFi access is ready</p>
+    
+    <div class="wifi-details">
+      <div class="wifi-item">
+        <div class="label">WiFi Network (SSID)</div>
+        <div class="value" id="ssid">Matoka-WiFi</div>
+        <button class="copy-btn" onclick="copyToClipboard('ssid')">Copy</button>
+      </div>
       
-      <p><strong>Amount:</strong> KSh 20</p>
-      <!-- Manual M-Pesa instructions removed -->
+      <div class="wifi-item">
+        <div class="label">Password</div>
+        <div class="value" id="password">Loading...</div>
+        <button class="copy-btn" onclick="copyToClipboard('password')">Copy</button>
+      </div>
+      
+      <div class="wifi-item">
+        <div class="label">Voucher Code</div>
+        <div class="value" id="voucherCode">Loading...</div>
+        <button class="copy-btn" onclick="copyToClipboard('voucherCode')">Copy</button>
+      </div>
     </div>
-
-    <!-- Button updated with a unique ID for JavaScript access -->
-    <button id="payBtn">Pay Now (STK Push)</button>
-    <!-- Status elements added -->
-    <p id="status" style="margin-top:15px; font-weight: bold;"></p>
+    
+    <div class="instructions">
+      <strong>How to Connect:</strong>
+      <ol>
+        <li>Go to WiFi settings on your device</li>
+        <li>Select "<span id="ssid-text">Matoka-WiFi</span>"</li>
+        <li>Enter the password above</li>
+        <li>If prompted, enter voucher code</li>
+        <li>Enjoy fast internet!</li>
+      </ol>
+    </div>
+    
+    <div class="timer" id="timer">
+      Access valid for: <span id="time-remaining">24:00:00</span>
+    </div>
+    
+    <div style="margin-top: 20px; font-size: 12px; color: #888;">
+      Need help? Contact support: 0700 000 000
+    </div>
   </div>
 
   <script>
-    // Define elements for easy access in JS
-    const payBtn = document.getElementById('payBtn');
-    const statusEl = document.getElementById('status');
-    const phoneInput = document.getElementById('phone');
-
-    // Helper function to display messages
-    function show(msg, error = false) {
-      statusEl.textContent = msg;
-      // Using CSS styles defined in the HTML for color coding
-      statusEl.style.color = error ? '#ff0000' : '#007bff'; 
-    }
-
-    // Add event listener to the new button ID
-    payBtn.addEventListener('click', async () => {
-      const phone = phoneInput.value.trim();
-      const amount = 20; // Hardcoded amount
-
-      // Client-side phone number validation
-      if (!/^(?:2547|07)\d{8}$/.test(phone)) {
-        show('Enter a valid phone number (2547XXXXXXXX)', true);
-        return;
-      }
-
-      // Normalize phone number to 254 format if user enters 07
-      const normalizedPhone = phone.startsWith('07') ? '254' + phone.slice(1) : phone;
-
-      show('Sending STK Push... please wait.');
-      payBtn.disabled = true; // Disable button while processing
-
-      // *** CORRECTED: Full URL to your Supabase Edge Function ***
-      const SUPABASE_FUNCTION_URL = 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/stk-push';
+    // Get voucher code from URL or generate
+    const urlParams = new URLSearchParams(window.location.search);
+    const voucherCode = urlParams.get('voucher') || generateVoucherCode();
+    const password = generatePassword();
+    
+    // Display credentials
+    document.getElementById('voucherCode').textContent = voucherCode;
+    document.getElementById('password').textContent = password;
+    document.getElementById('ssid-text').textContent = 'Matoka-WiFi';
+    
+    // Timer countdown (24 hours)
+    let hours = 24;
+    let minutes = 0;
+    let seconds = 0;
+    
+    function updateTimer() {
+      const timerElement = document.getElementById('time-remaining');
+      timerElement.textContent = 
+        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
       
-      // Your JWT token (moved from the URL to the Authorization header)
-      const SUPABASE_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iZmJkZWh6dmJ4emt0cnhhdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjczMzQsImV4cCI6MjA4MDYwMzMzNH0.R90SdMa_lv-24qmzIcvKcm_qJMbH2nU8pGhej99T7Q0';
-
-      try {
-        const response = await fetch(SUPABASE_FUNCTION_URL, {  // ← URL goes here
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            // ✅ CORRECT: Token goes in Authorization header
-            'Authorization': `Bearer ${SUPABASE_TOKEN}`
-          },
-          body: JSON.stringify({
-            phone: normalizedPhone,
-            amount: amount,
-          })
-        });
-
-        // Check if response is JSON before parsing
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          const text = await response.text();
-          console.error('Non-JSON response:', text);
-          throw new Error('Server returned non-JSON response');
+      if (seconds === 0) {
+        if (minutes === 0) {
+          if (hours === 0) {
+            clearInterval(timerInterval);
+            document.querySelector('.success-icon').textContent = '⏰';
+            document.querySelector('.success-icon').style.color = '#ff9800';
+            document.getElementById('timer').innerHTML = 'Access expired!';
+            return;
+          }
+          hours--;
+          minutes = 59;
+        } else {
+          minutes--;
         }
-
-        const data = await response.json();
-        
-        // Check for success condition based on the response status
-        if (!response.ok) {
-            throw new Error(data.error || data.errorMessage || data.message || 'Payment initiation failed.');
-        }
-
-        show('STK Push sent! Check your phone and enter your M-Pesa PIN.');
-        // Note: Actual Wi-Fi unlock logic happens when Lipana sends a webhook to your other function
-
-      } catch (err) {
-        console.error('Error:', err);
-        show(err.message || 'An error occurred. Please try again.', true);
-      } finally {
-        // Re-enable button after request is done
-        payBtn.disabled = false;
+        seconds = 59;
+      } else {
+        seconds--;
       }
-    });
+    }
+    
+    const timerInterval = setInterval(updateTimer, 1000);
+    
+    // Copy to clipboard function
+    function copyToClipboard(elementId) {
+      const text = document.getElementById(elementId).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.style.background = '#4CAF50';
+        
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = '#007bff';
+        }, 2000);
+      });
+    }
+    
+    // Generate random voucher code (for demo)
+    function generateVoucherCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let code = '';
+      for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    }
+    
+    // Generate random password (for demo)
+    function generatePassword() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+      let password = '';
+      for (let i = 0; i < 12; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return password;
+    }
+    
+    // In real implementation, fetch from Supabase based on transaction ID
+    async function fetchVoucherDetails() {
+      const transactionId = urlParams.get('transaction');
+      if (transactionId) {
+        try {
+          const response = await fetch(`https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/get-voucher?transaction=${transactionId}`);
+          const data = await response.json();
+          
+          if (data.success) {
+            document.getElementById('voucherCode').textContent = data.voucher_code;
+            document.getElementById('password').textContent = data.password;
+          }
+        } catch (error) {
+          console.error('Error fetching voucher:', error);
+        }
+      }
+    }
+    
+    // Uncomment in production
+    // fetchVoucherDetails();
   </script>
 </body>
 </html>
