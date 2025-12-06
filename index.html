@@ -278,531 +278,499 @@
         </div>
     </div>
 
-    <script>
-        // Configuration
-        const CONFIG = {
-            SUPABASE_FUNCTION_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/stk-push',
-            WEBHOOK_CHECK_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/payment-webhook',
-            SUPABASE_TOKEN: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iZmJkZWh6dmJ4emt0cnhhdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjczMzQsImV4cCI6MjA4MDYwMzMzNH0.R90SdMa_lv-24qmzIcvKcm_qJMbH2nU8pGhej99T7Q0',
-            
-            // Plans starting from 10 KSh
-            PLANS: {
-                '30': { amount: 10, speed: '10 Mbps', description: '30 Minutes (Value)' },
-                '60': { amount: 20, speed: '25 Mbps', description: '60 Minutes (Popular)' },
-                '180': { amount: 50, speed: '30 Mbps', description: '3 Hours (Premium)' },
-                '360': { amount: 100, speed: '40 Mbps', description: '6 Hours (Unlimited)' },
-                '720': { amount: 200, speed: '50 Mbps', description: '12 Hours (Premium+)' }
-            },
-            
-            POLL_INTERVAL: 3000,
-            MAX_POLL_TIME: 300000
-        };
+   <script>
+    // Configuration - UPDATED FOR OPEN WIFI
+    const CONFIG = {
+        SUPABASE_FUNCTION_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/stk-push',
+        WEBHOOK_CHECK_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/payment-webhook',
+        SUPABASE_TOKEN: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iZmJkZWh6dmJ4emt0cnhhdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjczMzQsImV4cCI6MjA4MDYwMzMzNH0.R90SdMa_lv-24qmzIcvKcm_qJMbH2nU8pGhej99T7Q0',
+        
+        // UPDATED: For OPEN WiFi system
+        WIFI_SSID: 'Matoka Wifi',  // Your OPEN WiFi name
+        WIFI_TYPE: 'OPEN',         // No password needed
+        
+        // Plans
+        PLANS: {
+            '30': { amount: 10, duration: 30, description: '30 Minutes (Value)' },
+            '60': { amount: 20, duration: 60, description: '60 Minutes (Popular)' },
+            '180': { amount: 50, duration: 180, description: '3 Hours (Premium)' },
+            '360': { amount: 100, duration: 360, description: '6 Hours (Unlimited)' },
+            '720': { amount: 200, duration: 720, description: '12 Hours (Premium+)' }
+        },
+        
+        POLL_INTERVAL: 3000,
+        MAX_POLL_TIME: 300000
+    };
 
-        // State - Default plan set to 10 KSh
-        let state = {
+    // State
+    let state = {
+        currentStep: 1,
+        selectedPlan: '30',
+        amount: 10,
+        phone: '',
+        transactionId: null,
+        paymentInProgress: false,
+        checkingPayment: false,
+        pollInterval: null,
+        pollStartTime: null,
+        expiryTime: 30 * 60,
+        timerInterval: null
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        initializePlans();
+        initializeQuickAmounts();
+        setupEventListeners();
+        updateProgressBar();
+        updatePaymentSummary();
+        
+        // Auto-fill test number
+        document.getElementById('phone').value = '254712345678';
+        state.phone = '254712345678';
+        
+        // Set WiFi SSID display to your OPEN WiFi
+        document.getElementById('wifiSsid').textContent = CONFIG.WIFI_SSID;
+        document.getElementById('wifiPassword').textContent = 'No Password Required';
+    });
+
+    // Plan Selection
+    function initializePlans() {
+        const planCards = document.querySelectorAll('.plan-card');
+        planCards.forEach(plan => {
+            plan.addEventListener('click', function() {
+                planCards.forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                
+                state.selectedPlan = this.dataset.plan;
+                state.amount = parseInt(this.dataset.amount);
+                
+                updatePaymentSummary();
+                updateQuickAmounts(state.amount);
+            });
+        });
+        
+        // Auto-select first plan
+        planCards[0].classList.add('active');
+    }
+
+    // Quick Amount Buttons
+    function initializeQuickAmounts() {
+        const amountButtons = document.querySelectorAll('.amount-btn');
+        amountButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const amount = parseInt(this.dataset.amount);
+                
+                amountButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                let matchedPlan = '30';
+                for (const [plan, data] of Object.entries(CONFIG.PLANS)) {
+                    if (data.amount === amount) {
+                        matchedPlan = plan;
+                        break;
+                    }
+                }
+                
+                state.selectedPlan = matchedPlan;
+                state.amount = amount;
+                
+                document.querySelectorAll('.plan-card').forEach(card => {
+                    card.classList.remove('active');
+                    if (card.dataset.plan === matchedPlan) {
+                        card.classList.add('active');
+                    }
+                });
+                
+                updatePaymentSummary();
+            });
+        });
+    }
+
+    function updateQuickAmounts(selectedAmount) {
+        const amountButtons = document.querySelectorAll('.amount-btn');
+        amountButtons.forEach(btn => {
+            btn.classList.remove('active');
+            if (parseInt(btn.dataset.amount) === selectedAmount) {
+                btn.classList.add('active');
+            }
+        });
+    }
+
+    function updatePaymentSummary() {
+        const plan = CONFIG.PLANS[state.selectedPlan];
+        
+        document.getElementById('selectedPlan').textContent = plan.description;
+        document.getElementById('amountDisplay').textContent = `KSh ${state.amount}`;
+        document.getElementById('totalAmount').textContent = `KSh ${state.amount}`;
+        
+        document.getElementById('confirmPlan').textContent = plan.description;
+        document.getElementById('confirmAmount').textContent = `KSh ${state.amount}`;
+        document.getElementById('confirmTotal').textContent = `KSh ${state.amount}`;
+        
+        // Update expiry time
+        state.expiryTime = plan.duration * 60;
+    }
+
+    // Event Listeners
+    function setupEventListeners() {
+        document.getElementById('nextBtn').addEventListener('click', goToStep2);
+        document.getElementById('backBtn').addEventListener('click', goToStep1);
+        document.getElementById('payBtn').addEventListener('click', initiatePayment);
+        document.getElementById('cancelBtn').addEventListener('click', cancelPayment);
+        document.getElementById('newPaymentBtn').addEventListener('click', restartFlow);
+        
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.startsWith('254')) {
+                if (value.length > 12) value = value.slice(0, 12);
+            } else if (value.startsWith('07')) {
+                if (value.length > 10) value = value.slice(0, 10);
+            } else if (value.startsWith('7')) {
+                if (value.length > 9) value = value.slice(0, 9);
+                value = '254' + value;
+            }
+            
+            e.target.value = value;
+            state.phone = value;
+        });
+        
+        // Update copy buttons for OPEN WiFi
+        document.getElementById('copySsid').addEventListener('click', () => copyToClipboard(CONFIG.WIFI_SSID, 'copySsid'));
+        document.getElementById('copyPassword').addEventListener('click', () => copyToClipboard('No password required', 'copyPassword'));
+    }
+
+    // Step Navigation
+    function goToStep1() {
+        state.currentStep = 1;
+        showStep(1);
+        updateProgressBar();
+    }
+
+    function goToStep2() {
+        state.currentStep = 2;
+        showStep(2);
+        updateProgressBar();
+    }
+
+    function showStep(stepNumber) {
+        document.querySelectorAll('.flow-step').forEach(step => {
+            step.classList.remove('active');
+        });
+        document.getElementById(`step${stepNumber}`).classList.add('active');
+        state.currentStep = stepNumber;
+    }
+
+    function updateProgressBar() {
+        const progress = (state.currentStep / 4) * 100;
+        document.getElementById('progressBar').style.width = `${progress}%`;
+    }
+
+    // Validation
+    function validatePhoneNumber(phone) {
+        const phoneRegex = /^(?:2547|07)\d{8}$/;
+        return phoneRegex.test(phone);
+    }
+
+    function normalizePhone(phone) {
+        if (phone.startsWith('07')) {
+            return '254' + phone.slice(1);
+        }
+        return phone;
+    }
+
+    // Payment Flow
+    async function initiatePayment() {
+        if (state.paymentInProgress) return;
+        
+        const phone = document.getElementById('phone').value.trim();
+        
+        // Validate phone
+        if (!validatePhoneNumber(phone)) {
+            showStatus('error', 'Invalid Phone Number', 'Please enter a valid phone number (2547XXXXXXXX or 07XXXXXXXX)');
+            return;
+        }
+        
+        // Validate amount (minimum 10 KSh)
+        if (state.amount < 10) {
+            showStatus('error', 'Invalid Amount', 'Minimum transaction amount is KSh 10');
+            return;
+        }
+        
+        // Update state
+        state.paymentInProgress = true;
+        state.phone = phone;
+        const payBtn = document.getElementById('payBtn');
+        payBtn.disabled = true;
+        payBtn.innerHTML = '<div class="spinner"></div> Sending...';
+        
+        const normalizedPhone = normalizePhone(phone);
+        
+        try {
+            // Show step 3
+            state.currentStep = 3;
+            showStep(3);
+            updateProgressBar();
+            
+            // Show initial status
+            showStatus('processing', 'Sending STK Push...', 'Please wait while we send payment request to your phone');
+            
+            // Make API call to initiate STK Push
+            const response = await fetch(CONFIG.SUPABASE_FUNCTION_URL, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${CONFIG.SUPABASE_TOKEN}`
+                },
+                body: JSON.stringify({
+                    phone: normalizedPhone,
+                    amount: state.amount,
+                    plan: state.selectedPlan
+                })
+            });
+            
+            const responseText = await response.text();
+            let data;
+            
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                throw new Error('Invalid response from payment server');
+            }
+            
+            if (!response.ok) {
+                throw new Error(data.error || data.message || 'Payment initiation failed');
+            }
+            
+            // Save transaction ID
+            state.transactionId = data.data?.transactionId || data.transactionId || `TXN_${Date.now()}`;
+            
+            // Update status
+            showStatus('waiting', 'Check Your Phone', 'Enter your M-Pesa PIN on the prompt. We\'ll verify payment automatically.');
+            
+            // Start checking payment status
+            startPaymentChecking();
+            
+        } catch (error) {
+            console.error('Payment error:', error);
+            
+            let errorMessage = error.message;
+            if (errorMessage.includes('Failed to fetch')) {
+                errorMessage = 'Network error. Please check your internet connection and try again.';
+            }
+            
+            showStatus('error', 'Payment Failed', errorMessage);
+            
+            // Reset button
+            payBtn.disabled = false;
+            payBtn.innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
+            state.paymentInProgress = false;
+            
+            // Go back to step 2
+            state.currentStep = 2;
+            showStep(2);
+            updateProgressBar();
+        }
+    }
+
+    // Payment Status Checking
+    function startPaymentChecking() {
+        if (state.checkingPayment) return;
+        
+        state.checkingPayment = true;
+        state.pollStartTime = Date.now();
+        
+        // First check after 10 seconds
+        setTimeout(() => {
+            checkPaymentStatus();
+            state.pollInterval = setInterval(checkPaymentStatus, CONFIG.POLL_INTERVAL);
+        }, 10000);
+    }
+
+    function stopPaymentChecking() {
+        if (state.pollInterval) {
+            clearInterval(state.pollInterval);
+            state.pollInterval = null;
+        }
+        state.checkingPayment = false;
+    }
+
+    async function checkPaymentStatus() {
+        if (Date.now() - state.pollStartTime > CONFIG.MAX_POLL_TIME) {
+            stopPaymentChecking();
+            showStatus('error', 'Payment Timeout', 'Payment verification timed out. Please contact support if payment was deducted.');
+            return;
+        }
+        
+        try {
+            // Simulate payment confirmation
+            const isConfirmed = Math.random() > 0.7;
+            
+            if (isConfirmed) {
+                stopPaymentChecking();
+                showStatus('success', 'Payment Verified!', 'Your payment has been confirmed successfully.');
+                
+                setTimeout(() => {
+                    completePayment();
+                }, 2000);
+                
+            } else {
+                const elapsedSeconds = Math.floor((Date.now() - state.pollStartTime) / 1000);
+                showStatus('waiting', 'Waiting for Payment', `Checking payment status... (${elapsedSeconds}s)`);
+            }
+            
+        } catch (error) {
+            console.error('Status check error:', error);
+        }
+    }
+
+    // UPDATED: For OPEN WiFi
+    function completePayment() {
+        // Show OPEN WiFi instructions
+        document.getElementById('wifiPassword').textContent = 'No Password Required';
+        
+        // Update expiry time
+        const plan = CONFIG.PLANS[state.selectedPlan];
+        state.expiryTime = plan.duration * 60;
+        
+        // Show success message
+        showStatus('success', 'Access Granted!', `You can now connect to "${CONFIG.WIFI_SSID}" for ${plan.duration} minutes`);
+        
+        // Go to step 4
+        setTimeout(() => {
+            state.currentStep = 4;
+            showStep(4);
+            updateProgressBar();
+            
+            startExpiryTimer();
+            state.paymentInProgress = false;
+            
+            // Show alert with instructions
+            alert(`✅ PAYMENT SUCCESSFUL!\n\n📶 WiFi: ${CONFIG.WIFI_SSID}\n🔒 Security: Open Network (No Password)\n⏰ Access: ${plan.duration} minutes\n\nJust connect to "${CONFIG.WIFI_SSID}" and start browsing!`);
+        }, 1000);
+    }
+
+    function cancelPayment() {
+        stopPaymentChecking();
+        state.paymentInProgress = false;
+        
+        state.currentStep = 2;
+        showStep(2);
+        updateProgressBar();
+        
+        document.getElementById('payBtn').disabled = false;
+        document.getElementById('payBtn').innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
+        
+        showStatus('info', 'Payment Cancelled', 'You can try again when ready.');
+    }
+
+    function restartFlow() {
+        state = {
             currentStep: 1,
-            selectedPlan: '30', // Changed from '15' to '30'
-            amount: 10,         // Changed from 5 to 10
+            selectedPlan: '30',
+            amount: 10,
             phone: '',
             transactionId: null,
             paymentInProgress: false,
             checkingPayment: false,
             pollInterval: null,
             pollStartTime: null,
-            expiryTime: 30 * 60, // Changed from 15 to 30 minutes
+            expiryTime: 30 * 60,
             timerInterval: null
         };
+        
+        document.getElementById('phone').value = '254712345678';
+        updatePaymentSummary();
+        showStep(1);
+        updateProgressBar();
+        
+        // Reset WiFi display
+        document.getElementById('wifiSsid').textContent = CONFIG.WIFI_SSID;
+        document.getElementById('wifiPassword').textContent = 'No Password Required';
+        
+        document.getElementById('statusContainer').innerHTML = '';
+        document.getElementById('statusContainer').classList.remove('active');
+    }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            initializePlans();
-            initializeQuickAmounts();
-            setupEventListeners();
-            updateProgressBar();
-            updatePaymentSummary();
-            
-            // Auto-fill a test phone number for easier testing
-            document.getElementById('phone').value = '254712345678';
-            state.phone = '254712345678';
-        });
-
-        // Plan Selection
-        function initializePlans() {
-            const planCards = document.querySelectorAll('.plan-card');
-            planCards.forEach(plan => {
-                plan.addEventListener('click', function() {
-                    planCards.forEach(p => p.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    state.selectedPlan = this.dataset.plan;
-                    state.amount = parseInt(this.dataset.amount);
-                    
-                    updatePaymentSummary();
-                    updateQuickAmounts(state.amount);
-                });
-            });
+    // Status Display
+    function showStatus(type, title, message) {
+        let iconClass, icon;
+        
+        switch(type) {
+            case 'success':
+                iconClass = 'success';
+                icon = '<i class="fas fa-check"></i>';
+                break;
+            case 'error':
+                iconClass = 'error';
+                icon = '<i class="fas fa-times"></i>';
+                break;
+            case 'processing':
+                iconClass = 'processing';
+                icon = '<i class="fas fa-sync-alt"></i>';
+                break;
+            case 'waiting':
+                iconClass = 'waiting';
+                icon = '<i class="fas fa-hourglass-half"></i>';
+                break;
+            case 'info':
+                iconClass = 'waiting';
+                icon = '<i class="fas fa-info-circle"></i>';
+                break;
         }
+        
+        const statusContainer = document.getElementById('statusContainer');
+        statusContainer.innerHTML = `
+            <div class="status-icon ${iconClass}">${icon}</div>
+            <div class="status-message">${title}</div>
+            <div class="status-details">${message}</div>
+        `;
+        
+        statusContainer.classList.add('active');
+    }
 
-        // Quick Amount Buttons
-        function initializeQuickAmounts() {
-            const amountButtons = document.querySelectorAll('.amount-btn');
-            amountButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const amount = parseInt(this.dataset.amount);
-                    
-                    amountButtons.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    let matchedPlan = '30'; // Changed from '15' to '30'
-                    for (const [plan, data] of Object.entries(CONFIG.PLANS)) {
-                        if (data.amount === amount) {
-                            matchedPlan = plan;
-                            break;
-                        }
-                    }
-                    
-                    state.selectedPlan = matchedPlan;
-                    state.amount = amount;
-                    
-                    document.querySelectorAll('.plan-card').forEach(card => {
-                        card.classList.remove('active');
-                        if (card.dataset.plan === matchedPlan) {
-                            card.classList.add('active');
-                        }
-                    });
-                    
-                    updatePaymentSummary();
-                });
-            });
-        }
-
-        function updateQuickAmounts(selectedAmount) {
-            const amountButtons = document.querySelectorAll('.amount-btn');
-            amountButtons.forEach(btn => {
-                btn.classList.remove('active');
-                if (parseInt(btn.dataset.amount) === selectedAmount) {
-                    btn.classList.add('active');
-                }
-            });
-        }
-
-        function updatePaymentSummary() {
-            const plan = CONFIG.PLANS[state.selectedPlan];
-            
-            document.getElementById('selectedPlan').textContent = plan.description;
-            document.getElementById('connectionSpeed').textContent = plan.speed;
-            document.getElementById('amountDisplay').textContent = `KSh ${state.amount}`;
-            document.getElementById('totalAmount').textContent = `KSh ${state.amount}`;
-            
-            document.getElementById('confirmPlan').textContent = plan.description;
-            document.getElementById('confirmAmount').textContent = `KSh ${state.amount}`;
-            document.getElementById('confirmTotal').textContent = `KSh ${state.amount}`;
-            
-            switch(state.selectedPlan) {
-                case '30': state.expiryTime = 30 * 60; break;
-                case '60': state.expiryTime = 60 * 60; break;
-                case '180': state.expiryTime = 180 * 60; break;
-                case '360': state.expiryTime = 360 * 60; break;
-                case '720': state.expiryTime = 720 * 60; break;
-            }
-        }
-
-        // Event Listeners
-        function setupEventListeners() {
-            document.getElementById('nextBtn').addEventListener('click', goToStep2);
-            document.getElementById('backBtn').addEventListener('click', goToStep1);
-            document.getElementById('payBtn').addEventListener('click', initiatePayment);
-            document.getElementById('cancelBtn').addEventListener('click', cancelPayment);
-            document.getElementById('newPaymentBtn').addEventListener('click', restartFlow);
-            
-            document.getElementById('phone').addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\D/g, '');
-                
-                if (value.startsWith('254')) {
-                    if (value.length > 12) value = value.slice(0, 12);
-                } else if (value.startsWith('07')) {
-                    if (value.length > 10) value = value.slice(0, 10);
-                } else if (value.startsWith('7')) {
-                    if (value.length > 9) value = value.slice(0, 9);
-                    value = '254' + value;
-                }
-                
-                e.target.value = value;
-                state.phone = value;
-            });
-            
-            document.getElementById('copySsid').addEventListener('click', () => copyToClipboard('Matoka-WiFi', 'copySsid'));
-            document.getElementById('copyPassword').addEventListener('click', () => copyToClipboard(document.getElementById('wifiPassword').textContent, 'copyPassword'));
-        }
-
-        // Step Navigation
-        function goToStep1() {
-            state.currentStep = 1;
-            showStep(1);
-            updateProgressBar();
-        }
-
-        function goToStep2() {
-            state.currentStep = 2;
-            showStep(2);
-            updateProgressBar();
-        }
-
-        function showStep(stepNumber) {
-            document.querySelectorAll('.flow-step').forEach(step => {
-                step.classList.remove('active');
-            });
-            document.getElementById(`step${stepNumber}`).classList.add('active');
-            state.currentStep = stepNumber;
-        }
-
-        function updateProgressBar() {
-            const progress = (state.currentStep / 4) * 100;
-            document.getElementById('progressBar').style.width = `${progress}%`;
-        }
-
-        // Validation
-        function validatePhoneNumber(phone) {
-            // Accept both formats: 2547XXXXXXXX or 07XXXXXXXX
-            const phoneRegex = /^(?:2547|07)\d{8}$/;
-            return phoneRegex.test(phone);
-        }
-
-        function normalizePhone(phone) {
-            // Convert to 254 format if it's 07 format
-            if (phone.startsWith('07')) {
-                return '254' + phone.slice(1);
-            }
-            return phone;
-        }
-
-        // Payment Flow - Fixed with validation for minimum amount
-        async function initiatePayment() {
-            console.log('=== Starting Payment Process ===');
-            
-            if (state.paymentInProgress) {
-                console.log('Payment already in progress');
+    // Timer
+    function startExpiryTimer() {
+        if (state.timerInterval) clearInterval(state.timerInterval);
+        
+        state.timerInterval = setInterval(() => {
+            if (state.expiryTime <= 0) {
+                clearInterval(state.timerInterval);
+                document.getElementById('expiryTimer').textContent = 'EXPIRED';
+                document.getElementById('expiryTimer').style.color = 'var(--danger)';
                 return;
             }
             
-            const phone = document.getElementById('phone').value.trim();
-            console.log('Phone input:', phone);
+            state.expiryTime--;
             
-            // Validate phone
-            if (!validatePhoneNumber(phone)) {
-                console.log('Phone validation failed');
-                showStatus('error', 'Invalid Phone Number', 'Please enter a valid phone number (2547XXXXXXXX or 07XXXXXXXX)');
-                return;
+            const hours = Math.floor(state.expiryTime / 3600);
+            const minutes = Math.floor((state.expiryTime % 3600) / 60);
+            const seconds = state.expiryTime % 60;
+            
+            document.getElementById('expiryTimer').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+            if (minutes < 10 && hours === 0) {
+                document.getElementById('expiryTimer').style.color = 'var(--danger)';
             }
-            
-            // Validate amount (minimum 10 KSh)
-            if (state.amount < 10) {
-                console.log('Amount validation failed:', state.amount);
-                showStatus('error', 'Invalid Amount', 'Minimum transaction amount is KSh 10');
-                return;
-            }
-            
-            console.log('Validations passed');
-            
-            // Update state
-            state.paymentInProgress = true;
-            state.phone = phone;
-            const payBtn = document.getElementById('payBtn');
-            payBtn.disabled = true;
-            payBtn.innerHTML = '<div class="spinner"></div> Sending...';
-            
-            const normalizedPhone = normalizePhone(phone);
-            console.log('Normalized phone:', normalizedPhone);
-            
-            try {
-                // Show step 3
-                state.currentStep = 3;
-                showStep(3);
-                updateProgressBar();
-                
-                // Show initial status
-                showStatus('processing', 'Sending STK Push...', 'Please wait while we send payment request to your phone');
-                
-                console.log('Making API call to:', CONFIG.SUPABASE_FUNCTION_URL);
-                console.log('Request payload:', {
-                    phone: normalizedPhone,
-                    amount: state.amount,
-                    plan: state.selectedPlan
-                });
-                
-                // Make API call to initiate STK Push
-                const response = await fetch(CONFIG.SUPABASE_FUNCTION_URL, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${CONFIG.SUPABASE_TOKEN}`
-                    },
-                    body: JSON.stringify({
-                        phone: normalizedPhone,
-                        amount: state.amount,
-                        plan: state.selectedPlan
-                    })
-                });
-                
-                console.log('API Response status:', response.status);
-                console.log('API Response headers:', response.headers);
-                
-                // Get response as text
-                const responseText = await response.text();
-                console.log('API Response text:', responseText);
-                
-                let data;
-                try {
-                    data = JSON.parse(responseText);
-                    console.log('Parsed response data:', data);
-                } catch (parseError) {
-                    console.error('Failed to parse JSON:', parseError);
-                    console.error('Raw response:', responseText);
-                    throw new Error('Invalid response from payment server');
-                }
-                
-                if (!response.ok) {
-                    console.error('API returned error:', data);
-                    throw new Error(data.error || data.message || data.errorMessage || 'Payment initiation failed');
-                }
-                
-                // Save transaction ID
-                state.transactionId = data.data?.transactionId || data.transactionId || `TXN_${Date.now()}`;
-                console.log('Transaction ID:', state.transactionId);
-                
-                // Update status
-                showStatus('waiting', 'Check Your Phone', 'Enter your M-Pesa PIN on the prompt. We\'ll verify payment automatically.');
-                
-                // Start checking payment status
-                startPaymentChecking();
-                
-            } catch (error) {
-                console.error('Payment error:', error);
-                
-                // Show detailed error to user
-                let errorMessage = error.message;
-                if (errorMessage.includes('Failed to fetch')) {
-                    errorMessage = 'Network error. Please check your internet connection and try again.';
-                } else if (errorMessage.includes('Invalid response')) {
-                    errorMessage = 'Payment service is currently unavailable. Please try again later.';
-                }
-                
-                showStatus('error', 'Payment Failed', errorMessage);
-                
-                // Reset button
-                payBtn.disabled = false;
-                payBtn.innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
-                state.paymentInProgress = false;
-                
-                // Go back to step 2
-                state.currentStep = 2;
-                showStep(2);
-                updateProgressBar();
-            }
-        }
+        }, 1000);
+    }
 
-        // Payment Status Checking
-        function startPaymentChecking() {
-            if (state.checkingPayment) return;
+    // Copy to Clipboard
+    function copyToClipboard(text, buttonId) {
+        navigator.clipboard.writeText(text).then(() => {
+            const button = document.getElementById(buttonId);
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            button.classList.add('copied');
             
-            state.checkingPayment = true;
-            state.pollStartTime = Date.now();
-            
-            // First check after 10 seconds
             setTimeout(() => {
-                checkPaymentStatus();
-                state.pollInterval = setInterval(checkPaymentStatus, CONFIG.POLL_INTERVAL);
-            }, 10000);
-        }
-
-        function stopPaymentChecking() {
-            if (state.pollInterval) {
-                clearInterval(state.pollInterval);
-                state.pollInterval = null;
-            }
-            state.checkingPayment = false;
-        }
-
-        async function checkPaymentStatus() {
-            if (Date.now() - state.pollStartTime > CONFIG.MAX_POLL_TIME) {
-                stopPaymentChecking();
-                showStatus('error', 'Payment Timeout', 'Payment verification timed out. Please contact support if payment was deducted.');
-                return;
-            }
-            
-            try {
-                // For now, simulate checking
-                const isConfirmed = Math.random() > 0.7;
-                
-                if (isConfirmed) {
-                    stopPaymentChecking();
-                    showStatus('success', 'Payment Verified!', 'Your payment has been confirmed successfully.');
-                    
-                    setTimeout(() => {
-                        completePayment();
-                    }, 2000);
-                    
-                } else {
-                    const elapsedSeconds = Math.floor((Date.now() - state.pollStartTime) / 1000);
-                    showStatus('waiting', 'Waiting for Payment', `Checking payment status... (${elapsedSeconds}s)`);
-                }
-                
-            } catch (error) {
-                console.error('Status check error:', error);
-            }
-        }
-
-        function completePayment() {
-            const password = generatePassword();
-            document.getElementById('wifiPassword').textContent = password;
-            
-            updateExpiryTime();
-            
-            state.currentStep = 4;
-            showStep(4);
-            updateProgressBar();
-            
-            startExpiryTimer();
-            
-            state.paymentInProgress = false;
-        }
-
-        function updateExpiryTime() {
-            switch(state.selectedPlan) {
-                case '30': state.expiryTime = 30 * 60; break;
-                case '60': state.expiryTime = 60 * 60; break;
-                case '180': state.expiryTime = 180 * 60; break;
-                case '360': state.expiryTime = 360 * 60; break;
-                case '720': state.expiryTime = 720 * 60; break;
-            }
-        }
-
-        function cancelPayment() {
-            stopPaymentChecking();
-            state.paymentInProgress = false;
-            
-            state.currentStep = 2;
-            showStep(2);
-            updateProgressBar();
-            
-            document.getElementById('payBtn').disabled = false;
-            document.getElementById('payBtn').innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
-            
-            showStatus('info', 'Payment Cancelled', 'You can try again when ready.');
-        }
-
-        function restartFlow() {
-            state = {
-                currentStep: 1,
-                selectedPlan: '30', // Changed from '15' to '30'
-                amount: 10,         // Changed from 5 to 10
-                phone: '',
-                transactionId: null,
-                paymentInProgress: false,
-                checkingPayment: false,
-                pollInterval: null,
-                pollStartTime: null,
-                expiryTime: 30 * 60, // Changed from 15 to 30 minutes
-                timerInterval: null
-            };
-            
-            document.getElementById('phone').value = '';
-            updatePaymentSummary();
-            showStep(1);
-            updateProgressBar();
-            
-            document.getElementById('statusContainer').innerHTML = '';
-            document.getElementById('statusContainer').classList.remove('active');
-        }
-
-        // Status Display
-        function showStatus(type, title, message) {
-            let iconClass, icon;
-            
-            switch(type) {
-                case 'success':
-                    iconClass = 'success';
-                    icon = '<i class="fas fa-check"></i>';
-                    break;
-                case 'error':
-                    iconClass = 'error';
-                    icon = '<i class="fas fa-times"></i>';
-                    break;
-                case 'processing':
-                    iconClass = 'processing';
-                    icon = '<i class="fas fa-sync-alt"></i>';
-                    break;
-                case 'waiting':
-                    iconClass = 'waiting';
-                    icon = '<i class="fas fa-hourglass-half"></i>';
-                    break;
-                case 'info':
-                    iconClass = 'waiting';
-                    icon = '<i class="fas fa-info-circle"></i>';
-                    break;
-            }
-            
-            const statusContainer = document.getElementById('statusContainer');
-            statusContainer.innerHTML = `
-                <div class="status-icon ${iconClass}">${icon}</div>
-                <div class="status-message">${title}</div>
-                <div class="status-details">${message}</div>
-            `;
-            
-            statusContainer.classList.add('active');
-        }
-
-        // WiFi Credentials
-        function generatePassword() {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-            let password = '';
-            for (let i = 0; i < 10; i++) {
-                password += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return password;
-        }
-
-        // Timer
-        function startExpiryTimer() {
-            if (state.timerInterval) clearInterval(state.timerInterval);
-            
-            state.timerInterval = setInterval(() => {
-                if (state.expiryTime <= 0) {
-                    clearInterval(state.timerInterval);
-                    document.getElementById('expiryTimer').textContent = 'EXPIRED';
-                    document.getElementById('expiryTimer').style.color = 'var(--danger)';
-                    return;
-                }
-                
-                state.expiryTime--;
-                
-                const hours = Math.floor(state.expiryTime / 3600);
-                const minutes = Math.floor((state.expiryTime % 3600) / 60);
-                const seconds = state.expiryTime % 60;
-                
-                document.getElementById('expiryTimer').textContent = 
-                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                    
-                if (minutes < 10 && hours === 0) {
-                    document.getElementById('expiryTimer').style.color = 'var(--danger)';
-                }
-            }, 1000);
-        }
-
-        // Copy to Clipboard
-        function copyToClipboard(text, buttonId) {
-            navigator.clipboard.writeText(text).then(() => {
-                const button = document.getElementById(buttonId);
-                const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                button.classList.add('copied');
-                
-                setTimeout(() => {
-                    button.innerHTML = originalText;
-                    button.classList.remove('copied');
-                }, 2000);
-            });
-        }
-    </script>
+                button.innerHTML = originalText;
+                button.classList.remove('copied');
+            }, 2000);
+        });
+    }
+</script>
 </body>
 </html>
