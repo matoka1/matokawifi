@@ -3,603 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matoka WiFi | Pay First, Connect After Verification</title>
+    <title>Matoka WiFi | Affordable Internet Plans</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #4361ee;
-            --primary-dark: #3a56d4;
-            --secondary: #7209b7;
-            --success: #4cc9f0;
-            --danger: #f72585;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --gray: #6c757d;
-            --border-radius: 12px;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: var(--dark);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 500px;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .logo-icon {
-            font-size: 2.5rem;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .logo-text {
-            font-size: 2.2rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        .tagline {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin-bottom: 5px;
-        }
-
-        .subtitle {
-            font-size: 0.9rem;
-            opacity: 0.7;
-        }
-
-        /* Main Content */
-        .main-content {
-            padding: 30px;
-        }
-
-        /* Payment Flow */
-        .flow-step {
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .flow-step.active {
-            display: block;
-        }
-
-        /* Step 1: Plan Selection */
-        .section-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .section-title i {
-            color: var(--primary);
-        }
-
-        .plans {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        @media (max-width: 480px) {
-            .plans {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .plan {
-            border: 2px solid #e9ecef;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .plan:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .plan.active {
-            border-color: var(--primary);
-            background: linear-gradient(135deg, #f8f9ff, #eef1ff);
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.1);
-        }
-
-        .plan-duration {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
-
-        .plan-price {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 5px;
-        }
-
-        .plan-price span {
-            font-size: 0.9rem;
-            color: var(--gray);
-        }
-
-        .plan-speed {
-            color: var(--gray);
-            font-size: 0.85rem;
-        }
-
-        /* Step 2: Phone Input */
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .form-label i {
-            color: var(--primary);
-        }
-
-        .input-with-icon {
-            position: relative;
-        }
-
-        .input-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 15px 15px 15px 45px;
-            border: 2px solid #e9ecef;
-            border-radius: var(--border-radius);
-            font-size: 1rem;
-            font-family: inherit;
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-        }
-
-        .input-hint {
-            font-size: 0.85rem;
-            color: var(--gray);
-            margin-top: 8px;
-            display: block;
-        }
-
-        /* Payment Summary */
-        .payment-summary {
-            background: #f8f9fa;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 2px solid #e9ecef;
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .summary-row:last-child {
-            border-bottom: none;
-        }
-
-        .summary-row.total {
-            border-top: 2px solid var(--dark);
-            font-weight: 700;
-            font-size: 1.2rem;
-            padding-top: 15px;
-            margin-top: 5px;
-        }
-
-        /* Buttons */
-        .btn {
-            width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            border-radius: var(--border-radius);
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-family: inherit;
-        }
-
-        .btn:hover:not(:disabled) {
-            background: linear-gradient(135deg, var(--primary-dark), #5a08a0);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: white;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-
-        .btn-secondary:hover {
-            background: #f8f9ff;
-        }
-
-        /* Status Display */
-        .status-container {
-            margin-top: 25px;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            text-align: center;
-            display: none;
-        }
-
-        .status-container.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .status-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            margin: 0 auto 15px;
-        }
-
-        .status-icon.success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-icon.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .status-icon.processing {
-            background: #cce5ff;
-            color: #004085;
-            animation: spin 1s linear infinite;
-        }
-
-        .status-icon.waiting {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .status-message {
-            font-size: 1.1rem;
-            font-weight: 500;
-            margin-bottom: 10px;
-        }
-
-        .status-details {
-            color: var(--gray);
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        /* Payment Pending Screen */
-        .payment-pending {
-            text-align: center;
-            padding: 30px 20px;
-        }
-
-        .pending-icon {
-            width: 80px;
-            height: 80px;
-            background: #fff3cd;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            color: #856404;
-            margin: 0 auto 20px;
-            animation: pulse 2s infinite;
-        }
-
-        .pending-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: var(--dark);
-        }
-
-        .pending-subtitle {
-            color: var(--gray);
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-
-        .checking-status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            color: var(--primary);
-            font-weight: 500;
-            margin-top: 20px;
-        }
-
-        .checking-dots {
-            display: flex;
-            gap: 5px;
-        }
-
-        .checking-dots span {
-            width: 8px;
-            height: 8px;
-            background: var(--primary);
-            border-radius: 50%;
-            animation: bounce 1.5s infinite;
-        }
-
-        .checking-dots span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .checking-dots span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes bounce {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-10px); }
-        }
-
-        /* WiFi Credentials */
-        .wifi-credentials {
-            margin-top: 20px;
-            padding: 25px;
-            background: linear-gradient(135deg, #f8f9ff, #eef1ff);
-            border-radius: var(--border-radius);
-            border: 2px solid var(--success);
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .wifi-credentials.active {
-            display: block;
-        }
-
-        .credentials-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .credentials-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--success);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-        }
-
-        .credentials-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .credentials-subtitle {
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-
-        .credential-item {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-bottom: 15px;
-            border: 1px solid #e9ecef;
-        }
-
-        .credential-label {
-            font-size: 0.9rem;
-            color: var(--gray);
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .credential-value {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--dark);
-            font-family: 'Courier New', monospace;
-            letter-spacing: 1px;
-        }
-
-        .copy-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .copy-btn:hover {
-            background: var(--primary-dark);
-        }
-
-        .copy-btn.copied {
-            background: var(--success);
-        }
-
-        .timer {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--gray);
-            font-size: 0.9rem;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e9ecef;
-        }
-
-        .timer-value {
-            font-weight: 600;
-            color: var(--primary);
-            font-size: 1.1rem;
-        }
-
-        /* Progress Bar */
-        .progress-bar {
-            height: 4px;
-            background: #e9ecef;
-            border-radius: 2px;
-            margin-bottom: 30px;
-            overflow: hidden;
-        }
-
-        .progress {
-            height: 100%;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            width: 0%;
-            transition: width 0.5s ease;
-            border-radius: 2px;
-        }
-
-        /* Footer */
-        .footer {
-            padding: 20px;
-            text-align: center;
-            color: var(--gray);
-            font-size: 0.85rem;
-            border-top: 1px solid #e9ecef;
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 10px;
-        }
-
-        .footer-links a {
-            color: var(--primary);
-            text-decoration: none;
-            transition: var(--transition);
-        }
-
-        .footer-links a:hover {
-            text-decoration: underline;
-        }
-
-        /* Loading Spinner */
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-    </style>
+    <!-- External CSS file -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
@@ -628,40 +35,114 @@
                     <i class="fas fa-bolt"></i>
                     Choose Your Internet Plan
                 </div>
-                <div class="plans">
-                    <div class="plan active" data-plan="30" data-amount="20">
+                
+                <!-- ADDED MORE AFFORDABLE PLANS -->
+                <div class="plans-grid">
+                    <!-- 5 Bob Plan -->
+                    <div class="plan-card active" data-plan="15" data-amount="5">
+                        <div class="plan-badge">Budget</div>
+                        <div class="plan-duration">15 MIN</div>
+                        <div class="plan-price">KSh <span>5</span></div>
+                        <div class="plan-speed">5 Mbps • Quick Browsing</div>
+                        <div class="plan-features">
+                            <div class="feature"><i class="fas fa-check"></i> WhatsApp & SMS</div>
+                            <div class="feature"><i class="fas fa-check"></i> Email & Light Browsing</div>
+                        </div>
+                    </div>
+
+                    <!-- 10 Bob Plan -->
+                    <div class="plan-card" data-plan="30" data-amount="10">
+                        <div class="plan-badge">Value</div>
                         <div class="plan-duration">30 MIN</div>
-                        <div class="plan-price">KSh <span>20</span></div>
-                        <div class="plan-speed">10 Mbps • Basic</div>
+                        <div class="plan-price">KSh <span>10</span></div>
+                        <div class="plan-speed">10 Mbps • Social Media</div>
+                        <div class="plan-features">
+                            <div class="feature"><i class="fas fa-check"></i> Facebook & Instagram</div>
+                            <div class="feature"><i class="fas fa-check"></i> Music Streaming</div>
+                        </div>
                     </div>
-                    <div class="plan" data-plan="60" data-amount="50">
+
+                    <!-- 20 Bob Plan -->
+                    <div class="plan-card" data-plan="60" data-amount="20">
+                        <div class="plan-badge popular">MOST POPULAR</div>
                         <div class="plan-duration">60 MIN</div>
-                        <div class="plan-price">KSh <span>50</span></div>
-                        <div class="plan-speed">25 Mbps • Fast</div>
+                        <div class="plan-price">KSh <span>20</span></div>
+                        <div class="plan-speed">25 Mbps • Video Streaming</div>
+                        <div class="plan-features">
+                            <div class="feature"><i class="fas fa-check"></i> YouTube & Netflix</div>
+                            <div class="feature"><i class="fas fa-check"></i> Video Calls</div>
+                        </div>
                     </div>
-                    <div class="plan" data-plan="360" data-amount="200">
+
+                    <!-- 50 Bob Plan -->
+                    <div class="plan-card" data-plan="180" data-amount="50">
+                        <div class="plan-badge">Premium</div>
+                        <div class="plan-duration">3 HOURS</div>
+                        <div class="plan-price">KSh <span>50</span></div>
+                        <div class="plan-speed">30 Mbps • Heavy Usage</div>
+                        <div class="plan-features">
+                            <div class="feature"><i class="fas fa-check"></i> HD Streaming</div>
+                            <div class="feature"><i class="fas fa-check"></i> Online Gaming</div>
+                        </div>
+                    </div>
+
+                    <!-- 100 Bob Plan -->
+                    <div class="plan-card" data-plan="360" data-amount="100">
+                        <div class="plan-badge">Unlimited</div>
                         <div class="plan-duration">6 HOURS</div>
+                        <div class="plan-price">KSh <span>100</span></div>
+                        <div class="plan-speed">40 Mbps • All-Day Access</div>
+                        <div class="plan-features">
+                            <div class="feature"><i class="fas fa-check"></i> Unlimited Streaming</div>
+                            <div class="feature"><i class="fas fa-check"></i> Multiple Devices</div>
+                        </div>
+                    </div>
+
+                    <!-- 200 Bob Plan -->
+                    <div class="plan-card" data-plan="720" data-amount="200">
+                        <div class="plan-badge">Premium+</div>
+                        <div class="plan-duration">12 HOURS</div>
                         <div class="plan-price">KSh <span>200</span></div>
-                        <div class="plan-speed">50 Mbps • Premium</div>
+                        <div class="plan-speed">50 Mbps • Maximum Speed</div>
+                        <div class="plan-features">
+                            <div class="feature"><i class="fas fa-check"></i> 4K Streaming</div>
+                            <div class="feature"><i class="fas fa-check"></i> Priority Connection</div>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="payment-summary">
                     <div class="summary-row">
                         <span>Selected Plan:</span>
-                        <span id="selectedPlan">30 Minutes</span>
+                        <span id="selectedPlan">15 Minutes (Budget)</span>
                     </div>
                     <div class="summary-row">
                         <span>Speed:</span>
-                        <span id="connectionSpeed">10 Mbps</span>
+                        <span id="connectionSpeed">5 Mbps</span>
                     </div>
                     <div class="summary-row">
                         <span>Amount:</span>
-                        <span id="amountDisplay">KSh 20</span>
+                        <span id="amountDisplay">KSh 5</span>
                     </div>
                     <div class="summary-row total">
                         <span>Total to Pay:</span>
-                        <span id="totalAmount">KSh 20</span>
+                        <span id="totalAmount">KSh 5</span>
+                    </div>
+                </div>
+
+                <!-- Quick Amount Buttons -->
+                <div class="quick-amounts">
+                    <div class="quick-title">
+                        <i class="fas fa-bolt"></i>
+                        Quick Select Amount:
+                    </div>
+                    <div class="amount-buttons">
+                        <button class="amount-btn active" data-amount="5">KSh 5</button>
+                        <button class="amount-btn" data-amount="10">KSh 10</button>
+                        <button class="amount-btn" data-amount="20">KSh 20</button>
+                        <button class="amount-btn" data-amount="50">KSh 50</button>
+                        <button class="amount-btn" data-amount="100">KSh 100</button>
+                        <button class="amount-btn" data-amount="200">KSh 200</button>
                     </div>
                 </div>
 
@@ -693,15 +174,15 @@
                 <div class="payment-summary">
                     <div class="summary-row">
                         <span>Plan:</span>
-                        <span id="confirmPlan">30 Minutes</span>
+                        <span id="confirmPlan">15 Minutes (Budget)</span>
                     </div>
                     <div class="summary-row">
                         <span>Amount:</span>
-                        <span id="confirmAmount">KSh 20</span>
+                        <span id="confirmAmount">KSh 5</span>
                     </div>
                     <div class="summary-row total">
                         <span>To Pay:</span>
-                        <span id="confirmTotal">KSh 20</span>
+                        <span id="confirmTotal">KSh 5</span>
                     </div>
                 </div>
 
@@ -786,7 +267,7 @@
 
                     <div class="timer">
                         <i class="fas fa-clock"></i>
-                        <span>Access expires in: <span class="timer-value" id="expiryTimer">24:00:00</span></span>
+                        <span>Access expires in: <span class="timer-value" id="expiryTimer">00:15:00</span></span>
                     </div>
 
                     <div style="margin-top: 25px; text-align: center;">
@@ -811,86 +292,57 @@
     </div>
 
     <script>
-        // Configuration
+        // Configuration - UPDATED WITH MORE PLANS
         const CONFIG = {
             SUPABASE_FUNCTION_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/stk-push',
             WEBHOOK_CHECK_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/payment-webhook',
             SUPABASE_TOKEN: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iZmJkZWh6dmJ4emt0cnhhdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjczMzQsImV4cCI6MjA4MDYwMzMzNH0.R90SdMa_lv-24qmzIcvKcm_qJMbH2nU8pGhej99T7Q0',
+            
+            // ADDED MORE AFFORDABLE PLANS
             PLANS: {
-                '30': { amount: 20, speed: '10 Mbps', description: '30 Minutes' },
-                '60': { amount: 50, speed: '25 Mbps', description: '60 Minutes' },
-                '360': { amount: 200, speed: '50 Mbps', description: '6 Hours' }
+                '15': { amount: 5, speed: '5 Mbps', description: '15 Minutes (Budget)' },
+                '30': { amount: 10, speed: '10 Mbps', description: '30 Minutes (Value)' },
+                '60': { amount: 20, speed: '25 Mbps', description: '60 Minutes (Popular)' },
+                '180': { amount: 50, speed: '30 Mbps', description: '3 Hours (Premium)' },
+                '360': { amount: 100, speed: '40 Mbps', description: '6 Hours (Unlimited)' },
+                '720': { amount: 200, speed: '50 Mbps', description: '12 Hours (Premium+)' }
             },
-            POLL_INTERVAL: 3000, // Check every 3 seconds
-            MAX_POLL_TIME: 300000 // Stop checking after 5 minutes
+            
+            POLL_INTERVAL: 3000,
+            MAX_POLL_TIME: 300000
         };
 
-        // DOM Elements
-        const elements = {
-            // Steps
-            step1: document.getElementById('step1'),
-            step2: document.getElementById('step2'),
-            step3: document.getElementById('step3'),
-            step4: document.getElementById('step4'),
-            progressBar: document.getElementById('progressBar'),
-            
-            // Step 1
-            nextBtn: document.getElementById('nextBtn'),
-            selectedPlan: document.getElementById('selectedPlan'),
-            connectionSpeed: document.getElementById('connectionSpeed'),
-            amountDisplay: document.getElementById('amountDisplay'),
-            totalAmount: document.getElementById('totalAmount'),
-            
-            // Step 2
-            backBtn: document.getElementById('backBtn'),
-            payBtn: document.getElementById('payBtn'),
-            phone: document.getElementById('phone'),
-            confirmPlan: document.getElementById('confirmPlan'),
-            confirmAmount: document.getElementById('confirmAmount'),
-            confirmTotal: document.getElementById('confirmTotal'),
-            
-            // Step 3
-            cancelBtn: document.getElementById('cancelBtn'),
-            statusContainer: document.getElementById('statusContainer'),
-            
-            // Step 4
-            wifiSsid: document.getElementById('wifiSsid'),
-            wifiPassword: document.getElementById('wifiPassword'),
-            expiryTimer: document.getElementById('expiryTimer'),
-            copySsid: document.getElementById('copySsid'),
-            copyPassword: document.getElementById('copyPassword'),
-            newPaymentBtn: document.getElementById('newPaymentBtn')
-        };
-
-        // State
+        // State - UPDATED DEFAULT PLAN
         let state = {
             currentStep: 1,
-            selectedPlan: '30',
-            amount: 20,
+            selectedPlan: '15', // Changed from '30' to '15' (5 bob plan)
+            amount: 5, // Changed from 20 to 5
             phone: '',
             transactionId: null,
             paymentInProgress: false,
             checkingPayment: false,
             pollInterval: null,
             pollStartTime: null,
-            expiryTime: 24 * 60 * 60, // 24 hours in seconds
+            expiryTime: 15 * 60, // 15 minutes in seconds (for 5 bob plan)
             timerInterval: null
         };
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             initializePlans();
+            initializeQuickAmounts();
             setupEventListeners();
             updateProgressBar();
+            updatePaymentSummary();
         });
 
-        // Plan Selection
+        // Plan Selection - UPDATED
         function initializePlans() {
-            const plans = document.querySelectorAll('.plan');
-            plans.forEach(plan => {
+            const planCards = document.querySelectorAll('.plan-card');
+            planCards.forEach(plan => {
                 plan.addEventListener('click', function() {
                     // Remove active class from all plans
-                    plans.forEach(p => p.classList.remove('active'));
+                    planCards.forEach(p => p.classList.remove('active'));
                     
                     // Add active class to clicked plan
                     this.classList.add('active');
@@ -901,34 +353,98 @@
                     
                     // Update UI
                     updatePaymentSummary();
+                    
+                    // Update quick amounts
+                    updateQuickAmounts(state.amount);
                 });
             });
         }
 
-        function updatePaymentSummary() {
-            const plan = CONFIG.PLANS[state.selectedPlan];
-            elements.selectedPlan.textContent = plan.description;
-            elements.connectionSpeed.textContent = plan.speed;
-            elements.amountDisplay.textContent = `KSh ${state.amount}`;
-            elements.totalAmount.textContent = `KSh ${state.amount}`;
-            
-            // Also update confirmation step
-            elements.confirmPlan.textContent = plan.description;
-            elements.confirmAmount.textContent = `KSh ${state.amount}`;
-            elements.confirmTotal.textContent = `KSh ${state.amount}`;
+        // Quick Amount Buttons - NEW FUNCTION
+        function initializeQuickAmounts() {
+            const amountButtons = document.querySelectorAll('.amount-btn');
+            amountButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const amount = parseInt(this.dataset.amount);
+                    
+                    // Update active button
+                    amountButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Find matching plan
+                    let matchedPlan = '15';
+                    for (const [plan, data] of Object.entries(CONFIG.PLANS)) {
+                        if (data.amount === amount) {
+                            matchedPlan = plan;
+                            break;
+                        }
+                    }
+                    
+                    // Update state
+                    state.selectedPlan = matchedPlan;
+                    state.amount = amount;
+                    
+                    // Update active plan card
+                    document.querySelectorAll('.plan-card').forEach(card => {
+                        card.classList.remove('active');
+                        if (card.dataset.plan === matchedPlan) {
+                            card.classList.add('active');
+                        }
+                    });
+                    
+                    // Update summary
+                    updatePaymentSummary();
+                });
+            });
         }
 
-        // Event Listeners
+        function updateQuickAmounts(selectedAmount) {
+            const amountButtons = document.querySelectorAll('.amount-btn');
+            amountButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (parseInt(btn.dataset.amount) === selectedAmount) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        // UPDATED PAYMENT SUMMARY FUNCTION
+        function updatePaymentSummary() {
+            const plan = CONFIG.PLANS[state.selectedPlan];
+            
+            // Update main step summary
+            document.getElementById('selectedPlan').textContent = plan.description;
+            document.getElementById('connectionSpeed').textContent = plan.speed;
+            document.getElementById('amountDisplay').textContent = `KSh ${state.amount}`;
+            document.getElementById('totalAmount').textContent = `KSh ${state.amount}`;
+            
+            // Update confirmation step
+            document.getElementById('confirmPlan').textContent = plan.description;
+            document.getElementById('confirmAmount').textContent = `KSh ${state.amount}`;
+            document.getElementById('confirmTotal').textContent = `KSh ${state.amount}`;
+            
+            // Update expiry time based on plan
+            switch(state.selectedPlan) {
+                case '15': state.expiryTime = 15 * 60; break; // 15 minutes
+                case '30': state.expiryTime = 30 * 60; break; // 30 minutes
+                case '60': state.expiryTime = 60 * 60; break; // 60 minutes
+                case '180': state.expiryTime = 180 * 60; break; // 3 hours
+                case '360': state.expiryTime = 360 * 60; break; // 6 hours
+                case '720': state.expiryTime = 720 * 60; break; // 12 hours
+            }
+        }
+
+        // Event Listeners - ADDED QUICK AMOUNTS
         function setupEventListeners() {
             // Navigation
-            elements.nextBtn.addEventListener('click', goToStep2);
-            elements.backBtn.addEventListener('click', goToStep1);
-            elements.payBtn.addEventListener('click', initiatePayment);
-            elements.cancelBtn.addEventListener('click', cancelPayment);
-            elements.newPaymentBtn.addEventListener('click', restartFlow);
+            document.getElementById('nextBtn').addEventListener('click', goToStep2);
+            document.getElementById('backBtn').addEventListener('click', goToStep1);
+            document.getElementById('payBtn').addEventListener('click', initiatePayment);
+            document.getElementById('cancelBtn').addEventListener('click', cancelPayment);
+            document.getElementById('newPaymentBtn').addEventListener('click', restartFlow);
             
             // Phone input formatting
-            elements.phone.addEventListener('input', function(e) {
+            document.getElementById('phone').addEventListener('input', function(e) {
                 let value = e.target.value.replace(/\D/g, '');
                 
                 if (value.startsWith('254')) {
@@ -945,8 +461,8 @@
             });
             
             // Copy buttons
-            elements.copySsid.addEventListener('click', () => copyToClipboard('Matoka-WiFi', elements.copySsid));
-            elements.copyPassword.addEventListener('click', () => copyToClipboard(elements.wifiPassword.textContent, elements.copyPassword));
+            document.getElementById('copySsid').addEventListener('click', () => copyToClipboard('Matoka-WiFi', 'copySsid'));
+            document.getElementById('copyPassword').addEventListener('click', () => copyToClipboard(document.getElementById('wifiPassword').textContent, 'copyPassword'));
         }
 
         // Step Navigation
@@ -964,21 +480,18 @@
 
         function showStep(stepNumber) {
             // Hide all steps
-            elements.step1.classList.remove('active');
-            elements.step2.classList.remove('active');
-            elements.step3.classList.remove('active');
-            elements.step4.classList.remove('active');
+            document.querySelectorAll('.flow-step').forEach(step => {
+                step.classList.remove('active');
+            });
             
             // Show current step
             document.getElementById(`step${stepNumber}`).classList.add('active');
-            
-            // Update state
             state.currentStep = stepNumber;
         }
 
         function updateProgressBar() {
             const progress = (state.currentStep / 4) * 100;
-            elements.progressBar.style.width = `${progress}%`;
+            document.getElementById('progressBar').style.width = `${progress}%`;
         }
 
         // Validation
@@ -994,7 +507,7 @@
         async function initiatePayment() {
             if (state.paymentInProgress) return;
             
-            const phone = elements.phone.value.trim();
+            const phone = document.getElementById('phone').value.trim();
             
             // Validation
             if (!validatePhoneNumber(phone)) {
@@ -1005,8 +518,8 @@
             // Update state
             state.paymentInProgress = true;
             state.phone = phone;
-            elements.payBtn.disabled = true;
-            elements.payBtn.innerHTML = '<div class="spinner"></div> Sending...';
+            document.getElementById('payBtn').disabled = true;
+            document.getElementById('payBtn').innerHTML = '<div class="spinner"></div> Sending...';
             
             const normalizedPhone = normalizePhone(phone);
             
@@ -1059,8 +572,8 @@
                 showStatus('error', 'Payment Failed', error.message || 'Please try again or contact support');
                 
                 // Reset button
-                elements.payBtn.disabled = false;
-                elements.payBtn.innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
+                document.getElementById('payBtn').disabled = false;
+                document.getElementById('payBtn').innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
                 state.paymentInProgress = false;
             }
         }
@@ -1127,7 +640,10 @@
         function completePayment() {
             // Generate WiFi credentials
             const password = generatePassword();
-            elements.wifiPassword.textContent = password;
+            document.getElementById('wifiPassword').textContent = password;
+            
+            // Update expiry timer based on plan
+            updateExpiryTime();
             
             // Move to step 4
             state.currentStep = 4;
@@ -1141,6 +657,18 @@
             state.paymentInProgress = false;
         }
 
+        function updateExpiryTime() {
+            // Set expiry time based on selected plan
+            switch(state.selectedPlan) {
+                case '15': state.expiryTime = 15 * 60; break;
+                case '30': state.expiryTime = 30 * 60; break;
+                case '60': state.expiryTime = 60 * 60; break;
+                case '180': state.expiryTime = 180 * 60; break;
+                case '360': state.expiryTime = 360 * 60; break;
+                case '720': state.expiryTime = 720 * 60; break;
+            }
+        }
+
         function cancelPayment() {
             stopPaymentChecking();
             state.paymentInProgress = false;
@@ -1151,8 +679,8 @@
             updateProgressBar();
             
             // Reset pay button
-            elements.payBtn.disabled = false;
-            elements.payBtn.innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
+            document.getElementById('payBtn').disabled = false;
+            document.getElementById('payBtn').innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
             
             showStatus('info', 'Payment Cancelled', 'You can try again when ready.');
         }
@@ -1161,27 +689,27 @@
             // Reset everything
             state = {
                 currentStep: 1,
-                selectedPlan: '30',
-                amount: 20,
+                selectedPlan: '15',
+                amount: 5,
                 phone: '',
                 transactionId: null,
                 paymentInProgress: false,
                 checkingPayment: false,
                 pollInterval: null,
                 pollStartTime: null,
-                expiryTime: 24 * 60 * 60,
+                expiryTime: 15 * 60,
                 timerInterval: null
             };
             
             // Reset UI
-            elements.phone.value = '';
+            document.getElementById('phone').value = '';
             updatePaymentSummary();
             showStep(1);
             updateProgressBar();
             
             // Clear any status
-            elements.statusContainer.innerHTML = '';
-            elements.statusContainer.classList.remove('active');
+            document.getElementById('statusContainer').innerHTML = '';
+            document.getElementById('statusContainer').classList.remove('active');
         }
 
         // Status Display
@@ -1211,13 +739,13 @@
                     break;
             }
             
-            elements.statusContainer.innerHTML = `
+            document.getElementById('statusContainer').innerHTML = `
                 <div class="status-icon ${iconClass}">${icon}</div>
                 <div class="status-message">${title}</div>
                 <div class="status-details">${message}</div>
             `;
             
-            elements.statusContainer.classList.add('active');
+            document.getElementById('statusContainer').classList.add('active');
         }
 
         // WiFi Credentials
@@ -1237,8 +765,8 @@
             state.timerInterval = setInterval(() => {
                 if (state.expiryTime <= 0) {
                     clearInterval(state.timerInterval);
-                    elements.expiryTimer.textContent = 'EXPIRED';
-                    elements.expiryTimer.style.color = 'var(--danger)';
+                    document.getElementById('expiryTimer').textContent = 'EXPIRED';
+                    document.getElementById('expiryTimer').style.color = 'var(--danger)';
                     return;
                 }
                 
@@ -1248,19 +776,20 @@
                 const minutes = Math.floor((state.expiryTime % 3600) / 60);
                 const seconds = state.expiryTime % 60;
                 
-                elements.expiryTimer.textContent = 
+                document.getElementById('expiryTimer').textContent = 
                     `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                     
-                // Color warning when less than 1 hour
-                if (hours === 0) {
-                    elements.expiryTimer.style.color = 'var(--danger)';
+                // Color warning when less than 10 minutes
+                if (minutes < 10 && hours === 0) {
+                    document.getElementById('expiryTimer').style.color = 'var(--danger)';
                 }
             }, 1000);
         }
 
         // Copy to Clipboard
-        function copyToClipboard(text, button) {
+        function copyToClipboard(text, buttonId) {
             navigator.clipboard.writeText(text).then(() => {
+                const button = document.getElementById(buttonId);
                 const originalText = button.innerHTML;
                 button.innerHTML = '<i class="fas fa-check"></i> Copied!';
                 button.classList.add('copied');
