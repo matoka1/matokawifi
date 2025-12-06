@@ -1134,7 +1134,7 @@
         </div>
     </div>
 
-    <script>
+   <script>
         // Configuration
         const CONFIG = {
             STK_PUSH_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/stk-push',
@@ -1172,17 +1172,28 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing Matoka WiFi...');
             initializePlanSelection();
             initializeQuickAmounts();
             initializeEventListeners();
             updateSummary();
+            
+            // Test phone input
+            const testPhone = "712345678";
+            document.getElementById('phone').value = testPhone;
+            state.phone = testPhone;
+            console.log('Test phone set:', testPhone);
         });
 
         // Plan Selection
         function initializePlanSelection() {
             const planCards = document.querySelectorAll('.plan-card');
+            console.log('Initializing', planCards.length, 'plan cards');
+            
             planCards.forEach(card => {
                 card.addEventListener('click', function() {
+                    console.log('Plan clicked:', this.dataset.plan);
+                    
                     // Remove active class from all cards
                     planCards.forEach(c => c.classList.remove('active'));
                     
@@ -1193,6 +1204,12 @@
                     state.selectedPlan = this.dataset.plan;
                     state.amount = parseInt(this.dataset.amount);
                     state.duration = parseInt(this.dataset.duration);
+                    
+                    console.log('State updated:', {
+                        plan: state.selectedPlan,
+                        amount: state.amount,
+                        duration: state.duration
+                    });
                     
                     // Update summary
                     updateSummary();
@@ -1206,9 +1223,12 @@
         // Quick Amount Buttons
         function initializeQuickAmounts() {
             const amountButtons = document.querySelectorAll('.amount-btn');
+            console.log('Initializing', amountButtons.length, 'amount buttons');
+            
             amountButtons.forEach(btn => {
                 btn.addEventListener('click', function() {
                     const amount = parseInt(this.dataset.amount);
+                    console.log('Amount button clicked:', amount);
                     
                     // Update active button
                     amountButtons.forEach(b => b.classList.remove('active'));
@@ -1227,6 +1247,8 @@
                     state.selectedPlan = matchedPlan;
                     state.amount = amount;
                     state.duration = CONFIG.PLANS[matchedPlan].duration;
+                    
+                    console.log('Matched plan:', matchedPlan, 'duration:', state.duration);
                     
                     // Update active plan card
                     document.querySelectorAll('.plan-card').forEach(card => {
@@ -1281,48 +1303,158 @@
 
         // Event Listeners
         function initializeEventListeners() {
+            console.log('Initializing event listeners...');
+            
             // Pay button
-            document.getElementById('payButton').addEventListener('click', initiatePayment);
+            const payButton = document.getElementById('payButton');
+            if (payButton) {
+                payButton.addEventListener('click', initiatePayment);
+                console.log('Pay button listener added');
+            } else {
+                console.error('Pay button not found!');
+            }
             
             // Cancel button
-            document.getElementById('cancelButton').addEventListener('click', cancelPayment);
+            const cancelButton = document.getElementById('cancelButton');
+            if (cancelButton) {
+                cancelButton.addEventListener('click', cancelPayment);
+                console.log('Cancel button listener added');
+            }
             
             // Retry button
-            document.getElementById('retryButton').addEventListener('click', retryPayment);
+            const retryButton = document.getElementById('retryButton');
+            if (retryButton) {
+                retryButton.addEventListener('click', retryPayment);
+                console.log('Retry button listener added');
+            }
             
             // New purchase button
-            document.getElementById('newPurchaseBtn').addEventListener('click', restartFlow);
+            const newPurchaseBtn = document.getElementById('newPurchaseBtn');
+            if (newPurchaseBtn) {
+                newPurchaseBtn.addEventListener('click', restartFlow);
+                console.log('New purchase button listener added');
+            }
             
             // Copy buttons
-            document.getElementById('copySsidBtn').addEventListener('click', () => copyToClipboard('Matoka-WiFi', 'copySsidBtn'));
-            document.getElementById('copyPasswordBtn').addEventListener('click', () => copyToClipboard(document.getElementById('wifiPassword').textContent, 'copyPasswordBtn'));
+            const copySsidBtn = document.getElementById('copySsidBtn');
+            if (copySsidBtn) {
+                copySsidBtn.addEventListener('click', () => copyToClipboard('Matoka-WiFi', 'copySsidBtn'));
+                console.log('Copy SSID button listener added');
+            }
+            
+            const copyPasswordBtn = document.getElementById('copyPasswordBtn');
+            if (copyPasswordBtn) {
+                copyPasswordBtn.addEventListener('click', () => copyToClipboard(document.getElementById('wifiPassword').textContent, 'copyPasswordBtn'));
+                console.log('Copy password button listener added');
+            }
             
             // Phone input formatting
-            document.getElementById('phone').addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.length > 9) value = value.slice(0, 9);
+            const phoneInput = document.getElementById('phone');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length > 9) value = value.slice(0, 9);
+                    
+                    // Format with spaces for readability
+                    if (value.length > 6) {
+                        value = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+                    } else if (value.length > 3) {
+                        value = value.replace(/(\d{3})(\d{3})/, '$1 $2');
+                    }
+                    
+                    e.target.value = value;
+                    state.phone = value.replace(/\s/g, '');
+                    console.log('Phone updated:', state.phone);
+                });
+                console.log('Phone input listener added');
+            }
+            
+            console.log('All event listeners initialized');
+        }
+
+        // Phone Validation Helper
+        function validatePhoneNumber(phone) {
+            // Remove any spaces
+            phone = phone.replace(/\s/g, '');
+            
+            // Check if it's a valid Kenyan number
+            if (!phone || phone.length !== 9) {
+                console.log('Phone validation failed: length not 9');
+                return false;
+            }
+            
+            // Should start with 7 (Kenyan mobile numbers)
+            if (!phone.startsWith('7')) {
+                console.log('Phone validation failed: must start with 7');
+                return false;
+            }
+            
+            // Should contain only digits
+            if (!/^\d+$/.test(phone)) {
+                console.log('Phone validation failed: contains non-digits');
+                return false;
+            }
+            
+            console.log('Phone validation passed:', phone);
+            return true;
+        }
+
+        // Show Error Message
+        function showError(message) {
+            // Create or update error message element
+            let errorDiv = document.querySelector('.error-message');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.style.cssText = `
+                    background: #f8d7da;
+                    color: #721c24;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin: 15px 0;
+                    border: 1px solid #f5c6cb;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                `;
                 
-                // Format with spaces for readability
-                if (value.length > 6) {
-                    value = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
-                } else if (value.length > 3) {
-                    value = value.replace(/(\d{3})(\d{3})/, '$1 $2');
+                // Insert after payment summary
+                const summary = document.querySelector('.payment-summary');
+                if (summary && summary.parentNode) {
+                    summary.parentNode.insertBefore(errorDiv, summary.nextSibling);
+                } else {
+                    document.getElementById('payButton').parentNode.insertBefore(errorDiv, document.getElementById('payButton'));
                 }
-                
-                e.target.value = value;
-                state.phone = value.replace(/\s/g, '');
-            });
+            }
+            
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${message}</span>`;
+            errorDiv.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+            
+            console.log('Error shown:', message);
         }
 
         // Payment Functions
         async function initiatePayment() {
-            if (state.paymentInProgress) return;
+            console.log('=== PAYMENT INITIATED ===');
+            console.log('Current state:', state);
+            
+            if (state.paymentInProgress) {
+                console.log('Payment already in progress, ignoring');
+                return;
+            }
             
             const phone = document.getElementById('phone').value.replace(/\s/g, '');
+            console.log('Phone input value:', phone);
             
             // Validation
-            if (!phone || phone.length !== 9 || !phone.startsWith('7')) {
-                showStatus('Please enter a valid phone number (e.g., 712345678)', 'error');
+            if (!validatePhoneNumber(phone)) {
+                showError('Please enter a valid Kenyan phone number (e.g., 712345678)');
+                console.log('Phone validation failed');
                 return;
             }
             
@@ -1330,13 +1462,21 @@
             state.paymentInProgress = true;
             state.phone = phone;
             
+            console.log('State updated for payment:', {
+                phone: state.phone,
+                amount: state.amount,
+                plan: state.selectedPlan
+            });
+            
             // Show loading state
             const payBtn = document.getElementById('payButton');
             payBtn.disabled = true;
+            const originalText = payBtn.innerHTML;
             payBtn.innerHTML = '<div class="spinner"></div> Processing...';
             
             // Full phone number with country code
             const fullPhone = '254' + phone;
+            console.log('Full phone for API:', fullPhone);
             
             try {
                 // Switch to processing step
@@ -1344,6 +1484,13 @@
                 
                 // Show initial status
                 showStatus('Sending payment request to your phone...');
+                
+                console.log('Making API call to:', CONFIG.STK_PUSH_URL);
+                console.log('Request body:', {
+                    phone: fullPhone,
+                    amount: state.amount,
+                    plan: state.selectedPlan
+                });
                 
                 // Call STK Push API
                 const response = await fetch(CONFIG.STK_PUSH_URL, {
@@ -1359,14 +1506,18 @@
                     })
                 });
                 
+                console.log('API Response status:', response.status);
+                
                 const data = await response.json();
+                console.log('API Response data:', data);
                 
                 if (!response.ok) {
                     throw new Error(data.error || data.message || 'Payment request failed');
                 }
                 
                 // Save transaction ID
-                state.transactionId = data.data?.transactionId || `TXN_${Date.now()}`;
+                state.transactionId = data.data?.transactionId || data.transactionId || `TXN_${Date.now()}`;
+                console.log('Transaction ID:', state.transactionId);
                 
                 // Update status
                 showStatus('Payment request sent! Check your phone for M-Pesa prompt.');
@@ -1380,8 +1531,11 @@
                 
                 // Reset button
                 payBtn.disabled = false;
-                payBtn.innerHTML = '<i class="fas fa-lock"></i><span>Pay with M-Pesa</span>';
+                payBtn.innerHTML = originalText;
                 state.paymentInProgress = false;
+                
+                // Show error to user
+                showError(error.message || 'Payment failed. Please try again.');
             }
         }
 
@@ -1389,12 +1543,14 @@
         function startPaymentPolling() {
             if (state.isPolling) return;
             
+            console.log('Starting payment polling...');
             state.isPolling = true;
             state.pollInterval = setInterval(checkPaymentStatus, CONFIG.POLL_INTERVAL);
             
             // Set timeout to stop polling after max time
             setTimeout(() => {
                 if (state.isPolling) {
+                    console.log('Payment polling timeout reached');
                     stopPaymentPolling();
                     showStatus('Payment verification timeout. Please contact support if payment was deducted.', 'error');
                 }
@@ -1402,6 +1558,7 @@
         }
 
         function stopPaymentPolling() {
+            console.log('Stopping payment polling');
             if (state.pollInterval) {
                 clearInterval(state.pollInterval);
                 state.pollInterval = null;
@@ -1411,6 +1568,8 @@
 
         async function checkPaymentStatus() {
             try {
+                console.log('Checking payment status...');
+                
                 // Call check-payment endpoint
                 const response = await fetch(CONFIG.CHECK_PAYMENT_URL, {
                     method: 'POST',
@@ -1425,14 +1584,20 @@
                     })
                 });
                 
+                console.log('Check payment response status:', response.status);
+                
                 if (!response.ok) throw new Error('Check failed');
                 
                 const data = await response.json();
+                console.log('Check payment response data:', data);
                 
                 if (data.verified) {
                     // Payment verified!
+                    console.log('Payment verified!', data);
                     stopPaymentPolling();
                     completePayment(data.voucher);
+                } else {
+                    console.log('Payment not yet verified');
                 }
                 
             } catch (error) {
@@ -1441,8 +1606,11 @@
         }
 
         function completePayment(voucherData) {
+            console.log('Completing payment...');
+            
             // Generate WiFi password
             const password = generatePassword();
+            console.log('Generated WiFi password:', password);
             document.getElementById('wifiPassword').textContent = password;
             
             // Show success step
@@ -1451,6 +1619,7 @@
             // Start expiry timer based on plan duration
             const expiryHours = state.duration / 60;
             state.expiryTime = expiryHours * 60 * 60;
+            console.log('Setting expiry time:', expiryHours, 'hours');
             startExpiryTimer();
             
             // Reset payment state
@@ -1459,56 +1628,74 @@
         }
 
         function cancelPayment() {
+            console.log('Cancelling payment...');
             stopPaymentPolling();
             showStep(1);
             
             // Reset payment button
-            document.getElementById('payButton').disabled = false;
-            document.getElementById('payButton').innerHTML = 
-                '<i class="fas fa-lock"></i><span>Pay with M-Pesa</span>';
+            const payBtn = document.getElementById('payButton');
+            payBtn.disabled = false;
+            payBtn.innerHTML = '<i class="fas fa-lock"></i><span>Pay with M-Pesa</span>';
             
             state.paymentInProgress = false;
+            
+            showStatus('Payment cancelled. You can try again when ready.', 'info');
         }
 
         function retryPayment() {
+            console.log('Retrying payment...');
             stopPaymentPolling();
             initiatePayment();
         }
 
         // Step Management
         function showStep(stepNumber) {
+            console.log('Showing step:', stepNumber);
+            
             // Hide all steps
             document.querySelectorAll('.step').forEach(step => {
                 step.classList.add('hidden');
             });
             
             // Show requested step
-            document.getElementById(`step${stepNumber}`).classList.remove('hidden');
-            state.currentStep = stepNumber;
+            const stepElement = document.getElementById(`step${stepNumber}`);
+            if (stepElement) {
+                stepElement.classList.remove('hidden');
+                state.currentStep = stepNumber;
+            } else {
+                console.error('Step element not found:', `step${stepNumber}`);
+            }
         }
 
         // Status Display
         function showStatus(message, type = 'info') {
             const statusEl = document.getElementById('statusMessage');
-            let icon = '⏳';
+            if (!statusEl) {
+                console.error('Status message element not found');
+                return;
+            }
             
+            let iconClass = 'fa-hourglass-half';
             if (type === 'error') {
-                icon = '❌';
+                iconClass = 'fa-exclamation-circle';
                 statusEl.style.color = 'var(--danger)';
             } else if (type === 'success') {
-                icon = '✅';
+                iconClass = 'fa-check-circle';
                 statusEl.style.color = 'var(--success)';
             } else {
+                iconClass = 'fa-hourglass-half';
                 statusEl.style.color = 'var(--primary)';
             }
             
-            statusEl.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'success' ? 'check-circle' : 'hourglass-half'}"></i> <span>${message}</span>`;
+            statusEl.innerHTML = `<i class="fas ${iconClass}"></i> <span>${message}</span>`;
+            console.log('Status updated:', type, message);
         }
 
         // Timer Functions
         function startExpiryTimer() {
             if (state.timerInterval) clearInterval(state.timerInterval);
             
+            console.log('Starting expiry timer');
             state.timerInterval = setInterval(() => {
                 if (state.expiryTime <= 0) {
                     clearInterval(state.timerInterval);
@@ -1557,6 +1744,8 @@
         }
 
         function restartFlow() {
+            console.log('Restarting flow...');
+            
             // Reset state
             state.currentStep = 1;
             state.selectedPlan = 'light';
@@ -1578,9 +1767,19 @@
             showStep(1);
             
             // Reset payment button
-            document.getElementById('payButton').disabled = false;
-            document.getElementById('payButton').innerHTML = 
-                '<i class="fas fa-lock"></i><span>Pay with M-Pesa</span>';
+            const payBtn = document.getElementById('payButton');
+            if (payBtn) {
+                payBtn.disabled = false;
+                payBtn.innerHTML = '<i class="fas fa-lock"></i><span>Pay with M-Pesa</span>';
+            }
+            
+            // Clear any error messages
+            const errorDiv = document.querySelector('.error-message');
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
+            
+            console.log('Flow restarted');
         }
     </script>
 </body>
