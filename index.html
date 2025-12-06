@@ -36,7 +36,8 @@
                     Choose Your Internet Plan
                 </div>
                 
-                <!-- ADDED MORE AFFORDABLE PLANS -->
+                <!-- Plans starting from 10 Bob -->
+                <div class="plans-grid">
                     <!-- 10 Bob Plan -->
                     <div class="plan-card" data-plan="30" data-amount="10">
                         <div class="plan-badge">Value</div>
@@ -101,19 +102,19 @@
                 <div class="payment-summary">
                     <div class="summary-row">
                         <span>Selected Plan:</span>
-                        <span id="selectedPlan">15 Minutes (Budget)</span>
+                        <span id="selectedPlan">30 Minutes (Value)</span>
                     </div>
                     <div class="summary-row">
                         <span>Speed:</span>
-                        <span id="connectionSpeed">5 Mbps</span>
+                        <span id="connectionSpeed">10 Mbps</span>
                     </div>
                     <div class="summary-row">
                         <span>Amount:</span>
-                        <span id="amountDisplay">KSh 5</span>
+                        <span id="amountDisplay">KSh 10</span>
                     </div>
                     <div class="summary-row total">
                         <span>Total to Pay:</span>
-                        <span id="totalAmount">KSh 5</span>
+                        <span id="totalAmount">KSh 10</span>
                     </div>
                 </div>
 
@@ -160,15 +161,15 @@
                 <div class="payment-summary">
                     <div class="summary-row">
                         <span>Plan:</span>
-                        <span id="confirmPlan">15 Minutes (Budget)</span>
+                        <span id="confirmPlan">30 Minutes (Value)</span>
                     </div>
                     <div class="summary-row">
                         <span>Amount:</span>
-                        <span id="confirmAmount">KSh 5</span>
+                        <span id="confirmAmount">KSh 10</span>
                     </div>
                     <div class="summary-row total">
                         <span>To Pay:</span>
-                        <span id="confirmTotal">KSh 5</span>
+                        <span id="confirmTotal">KSh 10</span>
                     </div>
                 </div>
 
@@ -253,7 +254,7 @@
 
                     <div class="timer">
                         <i class="fas fa-clock"></i>
-                        <span>Access expires in: <span class="timer-value" id="expiryTimer">00:15:00</span></span>
+                        <span>Access expires in: <span class="timer-value" id="expiryTimer">00:30:00</span></span>
                     </div>
 
                     <div style="margin-top: 25px; text-align: center;">
@@ -277,16 +278,15 @@
         </div>
     </div>
 
-   <script>
-        // Configuration - UPDATED WITH MORE PLANS
+    <script>
+        // Configuration
         const CONFIG = {
             SUPABASE_FUNCTION_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/stk-push',
             WEBHOOK_CHECK_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/payment-webhook',
             SUPABASE_TOKEN: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iZmJkZWh6dmJ4emt0cnhhdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjczMzQsImV4cCI6MjA4MDYwMzMzNH0.R90SdMa_lv-24qmzIcvKcm_qJMbH2nU8pGhej99T7Q0',
             
-            // ADDED MORE AFFORDABLE PLANS
+            // Plans starting from 10 KSh
             PLANS: {
-                '15': { amount: 5, speed: '5 Mbps', description: '15 Minutes (Budget)' },
                 '30': { amount: 10, speed: '10 Mbps', description: '30 Minutes (Value)' },
                 '60': { amount: 20, speed: '25 Mbps', description: '60 Minutes (Popular)' },
                 '180': { amount: 50, speed: '30 Mbps', description: '3 Hours (Premium)' },
@@ -298,18 +298,18 @@
             MAX_POLL_TIME: 300000
         };
 
-        // State - UPDATED DEFAULT PLAN
+        // State - Default plan set to 10 KSh
         let state = {
             currentStep: 1,
-            selectedPlan: '15',
-            amount: 5,
+            selectedPlan: '30', // Changed from '15' to '30'
+            amount: 10,         // Changed from 5 to 10
             phone: '',
             transactionId: null,
             paymentInProgress: false,
             checkingPayment: false,
             pollInterval: null,
             pollStartTime: null,
-            expiryTime: 15 * 60,
+            expiryTime: 30 * 60, // Changed from 15 to 30 minutes
             timerInterval: null
         };
 
@@ -353,7 +353,7 @@
                     amountButtons.forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                     
-                    let matchedPlan = '15';
+                    let matchedPlan = '30'; // Changed from '15' to '30'
                     for (const [plan, data] of Object.entries(CONFIG.PLANS)) {
                         if (data.amount === amount) {
                             matchedPlan = plan;
@@ -399,7 +399,6 @@
             document.getElementById('confirmTotal').textContent = `KSh ${state.amount}`;
             
             switch(state.selectedPlan) {
-                case '15': state.expiryTime = 15 * 60; break;
                 case '30': state.expiryTime = 30 * 60; break;
                 case '60': state.expiryTime = 60 * 60; break;
                 case '180': state.expiryTime = 180 * 60; break;
@@ -462,7 +461,7 @@
             document.getElementById('progressBar').style.width = `${progress}%`;
         }
 
-        // Validation - FIXED
+        // Validation
         function validatePhoneNumber(phone) {
             // Accept both formats: 2547XXXXXXXX or 07XXXXXXXX
             const phoneRegex = /^(?:2547|07)\d{8}$/;
@@ -477,7 +476,7 @@
             return phone;
         }
 
-        // Payment Flow - FIXED WITH BETTER ERROR HANDLING
+        // Payment Flow - Fixed with validation for minimum amount
         async function initiatePayment() {
             console.log('=== Starting Payment Process ===');
             
@@ -489,14 +488,21 @@
             const phone = document.getElementById('phone').value.trim();
             console.log('Phone input:', phone);
             
-            // Validation
+            // Validate phone
             if (!validatePhoneNumber(phone)) {
                 console.log('Phone validation failed');
                 showStatus('error', 'Invalid Phone Number', 'Please enter a valid phone number (2547XXXXXXXX or 07XXXXXXXX)');
                 return;
             }
             
-            console.log('Phone validation passed');
+            // Validate amount (minimum 10 KSh)
+            if (state.amount < 10) {
+                console.log('Amount validation failed:', state.amount);
+                showStatus('error', 'Invalid Amount', 'Minimum transaction amount is KSh 10');
+                return;
+            }
+            
+            console.log('Validations passed');
             
             // Update state
             state.paymentInProgress = true;
@@ -541,7 +547,7 @@
                 console.log('API Response status:', response.status);
                 console.log('API Response headers:', response.headers);
                 
-                // First, get the response as text to see what's returned
+                // Get response as text
                 const responseText = await response.text();
                 console.log('API Response text:', responseText);
                 
@@ -663,7 +669,6 @@
 
         function updateExpiryTime() {
             switch(state.selectedPlan) {
-                case '15': state.expiryTime = 15 * 60; break;
                 case '30': state.expiryTime = 30 * 60; break;
                 case '60': state.expiryTime = 60 * 60; break;
                 case '180': state.expiryTime = 180 * 60; break;
@@ -689,15 +694,15 @@
         function restartFlow() {
             state = {
                 currentStep: 1,
-                selectedPlan: '15',
-                amount: 5,
+                selectedPlan: '30', // Changed from '15' to '30'
+                amount: 10,         // Changed from 5 to 10
                 phone: '',
                 transactionId: null,
                 paymentInProgress: false,
                 checkingPayment: false,
                 pollInterval: null,
                 pollStartTime: null,
-                expiryTime: 15 * 60,
+                expiryTime: 30 * 60, // Changed from 15 to 30 minutes
                 timerInterval: null
             };
             
