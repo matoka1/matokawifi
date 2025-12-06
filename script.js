@@ -28,7 +28,8 @@ payBtn.addEventListener('click', async () => {
   payBtn.disabled = true;
 
   try {
-    const response = await fetch('https://teabnourcuwvsgpqpvef.supabase.co', {
+    // Corrected URL pointing to the deployed Edge Function
+    const response = await fetch('mbfbdehzvbxzktrxauuu.supabase.co', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -39,7 +40,7 @@ payBtn.addEventListener('click', async () => {
     });
 
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Payment failed.');
+    if (!response.ok) throw new Error(data.error || data.errorMessage || 'Payment failed.');
 
     show('STK Push sent! Check your phone and enter your M-Pesa PIN.');
   } catch (err) {
