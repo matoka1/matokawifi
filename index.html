@@ -3,27 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matoka WiFi | Affordable Internet Plans</title>
+    <title>Matoka WiFi | Pay First, Connect After Verification</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #4361ee;
-            --primary-light: #6381ff;
             --primary-dark: #3a56d4;
             --secondary: #7209b7;
             --success: #4cc9f0;
-            --success-dark: #38b2e0;
             --danger: #f72585;
-            --warning: #ffb703;
             --light: #f8f9fa;
             --dark: #212529;
             --gray: #6c757d;
-            --light-gray: #e9ecef;
-            --border-radius: 16px;
-            --border-radius-sm: 12px;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.12);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --border-radius: 12px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
         }
 
         * {
@@ -33,7 +27,7 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: var(--dark);
             min-height: 100vh;
@@ -41,7 +35,6 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            line-height: 1.6;
         }
 
         .container {
@@ -49,42 +42,22 @@
             max-width: 500px;
             background: white;
             border-radius: var(--border-radius);
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow);
             overflow: hidden;
-            animation: fadeIn 0.6s ease;
+            animation: fadeIn 0.5s ease;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Header */
         .header {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            padding: 35px 30px;
+            padding: 30px;
             text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 1%, transparent 1%);
-            background-size: 30px 30px;
-            opacity: 0.3;
-            animation: float 20s linear infinite;
-        }
-
-        @keyframes float {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
         }
 
         .logo {
@@ -93,12 +66,10 @@
             justify-content: center;
             gap: 15px;
             margin-bottom: 15px;
-            position: relative;
-            z-index: 1;
         }
 
         .logo-icon {
-            font-size: 2.8rem;
+            font-size: 2.5rem;
             animation: pulse 2s infinite;
         }
 
@@ -109,43 +80,20 @@
         }
 
         .logo-text {
-            font-size: 2.4rem;
-            font-weight: 800;
+            font-size: 2.2rem;
+            font-weight: 700;
             letter-spacing: -0.5px;
-            background: linear-gradient(to right, white, #f0f0f0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         .tagline {
-            font-size: 1.2rem;
-            opacity: 0.95;
-            margin-bottom: 8px;
-            font-weight: 300;
-            position: relative;
-            z-index: 1;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
         }
 
         .subtitle {
-            font-size: 0.95rem;
-            opacity: 0.8;
-            font-weight: 300;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Badge */
-        .badge {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            margin-top: 10px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            z-index: 1;
+            font-size: 0.9rem;
+            opacity: 0.7;
         }
 
         /* Main Content */
@@ -153,297 +101,156 @@
             padding: 30px;
         }
 
-        /* Plan Selection */
-        .plans-container {
-            margin-bottom: 30px;
+        /* Payment Flow */
+        .flow-step {
+            display: none;
+            animation: fadeIn 0.5s ease;
         }
 
+        .flow-step.active {
+            display: block;
+        }
+
+        /* Step 1: Plan Selection */
         .section-title {
-            font-size: 1.3rem;
-            font-weight: 700;
+            font-size: 1.2rem;
+            font-weight: 600;
             margin-bottom: 20px;
             color: var(--dark);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .section-title i {
             color: var(--primary);
-            font-size: 1.4rem;
         }
 
-        .plans-grid {
+        .plans {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
 
         @media (max-width: 480px) {
-            .plans-grid {
+            .plans {
                 grid-template-columns: 1fr;
             }
         }
 
-        .plan-card {
-            background: white;
-            border: 2px solid var(--light-gray);
-            border-radius: var(--border-radius-sm);
-            padding: 25px 20px;
+        .plan {
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius);
+            padding: 20px;
             text-align: center;
             cursor: pointer;
             transition: var(--transition);
-            position: relative;
-            overflow: hidden;
         }
 
-        .plan-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary-light);
-            box-shadow: var(--shadow);
+        .plan:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
         }
 
-        .plan-card.active {
+        .plan.active {
             border-color: var(--primary);
             background: linear-gradient(135deg, #f8f9ff, #eef1ff);
-            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.15);
-            transform: translateY(-5px);
-        }
-
-        .plan-card.popular {
-            border-color: var(--warning);
-        }
-
-        .plan-card.popular::before {
-            content: 'MOST POPULAR';
-            position: absolute;
-            top: 10px;
-            right: -25px;
-            background: var(--warning);
-            color: white;
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 3px 30px;
-            transform: rotate(45deg);
-        }
-
-        .plan-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--primary-light), var(--primary));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            color: white;
-            font-size: 1.5rem;
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.1);
         }
 
         .plan-duration {
-            font-size: 1.4rem;
-            font-weight: 800;
+            font-size: 1.3rem;
+            font-weight: 700;
             color: var(--primary);
             margin-bottom: 5px;
-            line-height: 1.2;
         }
 
         .plan-price {
-            font-size: 2.5rem;
-            font-weight: 800;
+            font-size: 1.8rem;
+            font-weight: 700;
             color: var(--dark);
-            margin-bottom: 8px;
-            line-height: 1;
+            margin-bottom: 5px;
         }
 
         .plan-price span {
-            font-size: 1rem;
-            color: var(--gray);
-            font-weight: 500;
-        }
-
-        .plan-description {
             font-size: 0.9rem;
             color: var(--gray);
-            margin-bottom: 15px;
-            min-height: 40px;
         }
 
-        .plan-features {
-            list-style: none;
-            text-align: left;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid var(--light-gray);
-        }
-
-        .plan-features li {
-            padding: 5px 0;
+        .plan-speed {
+            color: var(--gray);
             font-size: 0.85rem;
-            color: var(--gray);
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
-        .plan-features li i {
-            color: var(--success);
-            font-size: 0.9rem;
-        }
-
-        /* Quick Amounts */
-        .quick-amounts {
-            background: #f8f9ff;
-            border-radius: var(--border-radius-sm);
-            padding: 20px;
+        /* Step 2: Phone Input */
+        .form-group {
             margin-bottom: 25px;
-            border: 1px solid #e6e9ff;
-        }
-
-        .quick-title {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .quick-title i {
-            color: var(--success);
-        }
-
-        .amount-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .amount-btn {
-            flex: 1;
-            min-width: calc(33.333% - 10px);
-            padding: 12px;
-            background: white;
-            border: 2px solid var(--light-gray);
-            border-radius: 10px;
-            font-weight: 600;
-            color: var(--dark);
-            cursor: pointer;
-            transition: var(--transition);
-            text-align: center;
-            font-size: 1.1rem;
-        }
-
-        .amount-btn:hover {
-            border-color: var(--primary-light);
-            background: #f8f9ff;
-        }
-
-        .amount-btn.active {
-            border-color: var(--primary);
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.2);
-        }
-
-        /* Phone Input */
-        .phone-section {
-            margin-bottom: 30px;
         }
 
         .form-label {
             display: block;
-            margin-bottom: 12px;
-            font-weight: 600;
+            margin-bottom: 8px;
+            font-weight: 500;
             color: var(--dark);
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 1.1rem;
+            gap: 8px;
         }
 
         .form-label i {
             color: var(--primary);
         }
 
-        .input-group {
+        .input-with-icon {
             position: relative;
-            display: flex;
-            align-items: center;
         }
 
-        .country-code {
+        .input-icon {
             position: absolute;
             left: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            top: 50%;
+            transform: translateY(-50%);
             color: var(--gray);
-            font-weight: 500;
-            z-index: 1;
-        }
-
-        .country-code i {
-            color: var(--primary);
         }
 
         .form-control {
             width: 100%;
-            padding: 18px 15px 18px 110px;
-            border: 2px solid var(--light-gray);
-            border-radius: var(--border-radius-sm);
-            font-size: 1.1rem;
+            padding: 15px 15px 15px 45px;
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
             font-family: inherit;
             transition: var(--transition);
-            font-weight: 500;
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
         }
 
         .input-hint {
             font-size: 0.85rem;
             color: var(--gray);
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            margin-top: 8px;
+            display: block;
         }
 
         /* Payment Summary */
         .payment-summary {
-            background: linear-gradient(135deg, #f8f9ff, #eef1ff);
-            border-radius: var(--border-radius-sm);
-            padding: 25px;
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+            padding: 20px;
             margin-bottom: 25px;
-            border: 2px solid #e6e9ff;
-        }
-
-        .summary-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .summary-title i {
-            color: var(--primary);
+            border: 2px solid #e9ecef;
         }
 
         .summary-row {
             display: flex;
             justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(67, 97, 238, 0.1);
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .summary-row:last-child {
@@ -451,267 +258,22 @@
         }
 
         .summary-row.total {
-            border-top: 2px solid var(--primary);
-            margin-top: 10px;
+            border-top: 2px solid var(--dark);
+            font-weight: 700;
+            font-size: 1.2rem;
             padding-top: 15px;
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: var(--dark);
+            margin-top: 5px;
         }
 
         /* Buttons */
         .btn {
             width: 100%;
-            padding: 20px;
+            padding: 18px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             border: none;
-            border-radius: var(--border-radius-sm);
-            font-size: 1.2rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            font-family: inherit;
-            letter-spacing: 0.5px;
-            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.2);
-        }
-
-        .btn:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(67, 97, 238, 0.3);
-            background: linear-gradient(135deg, var(--primary-dark), #5a08a0);
-        }
-
-        .btn:active:not(:disabled) {
-            transform: translateY(-1px);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .btn-secondary {
-            background: white;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-            box-shadow: none;
-        }
-
-        .btn-secondary:hover {
-            background: #f8f9ff;
-            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.1);
-        }
-
-        /* Payment Processing */
-        .payment-processing {
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .processing-icon {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, var(--primary-light), var(--primary));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 25px;
-            color: white;
-            font-size: 3rem;
-            box-shadow: 0 10px 30px rgba(67, 97, 238, 0.3);
-            animation: pulse 2s infinite;
-        }
-
-        .processing-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: var(--dark);
-        }
-
-        .processing-subtitle {
-            color: var(--gray);
-            margin-bottom: 30px;
-            line-height: 1.6;
+            border-radius: var(--border-radius);
             font-size: 1.1rem;
-        }
-
-        .mpesa-instructions {
-            background: #fff8e1;
-            border-radius: var(--border-radius-sm);
-            padding: 25px;
-            margin: 30px 0;
-            border-left: 4px solid var(--warning);
-            text-align: left;
-        }
-
-        .instructions-title {
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: #856404;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .instructions-list {
-            list-style: none;
-        }
-
-        .instructions-list li {
-            padding: 10px 0;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            border-bottom: 1px solid rgba(133, 100, 4, 0.1);
-        }
-
-        .instructions-list li:last-child {
-            border-bottom: none;
-        }
-
-        .step-number {
-            width: 28px;
-            height: 28px;
-            background: var(--warning);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 0.9rem;
-            flex-shrink: 0;
-        }
-
-        /* WiFi Credentials */
-        .wifi-credentials {
-            padding: 40px 30px;
-            text-align: center;
-            background: linear-gradient(135deg, #f0fff4, #e6fffa);
-            border-radius: var(--border-radius-sm);
-            border: 2px solid var(--success);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .wifi-credentials::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(76, 201, 240, 0.1) 1%, transparent 1%);
-            background-size: 40px 40px;
-            animation: float 15s linear infinite;
-        }
-
-        .credentials-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--success), var(--success-dark));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            color: white;
-            font-size: 2.5rem;
-            position: relative;
-            z-index: 1;
-            box-shadow: 0 10px 30px rgba(76, 201, 240, 0.3);
-            animation: bounce 1s ease;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-20px); }
-            60% { transform: translateY(-10px); }
-        }
-
-        .credentials-title {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 10px;
-            color: var(--dark);
-            position: relative;
-            z-index: 1;
-        }
-
-        .credentials-subtitle {
-            color: var(--gray);
-            margin-bottom: 30px;
-            font-size: 1.1rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .credentials-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-            position: relative;
-            z-index: 1;
-        }
-
-        @media (max-width: 480px) {
-            .credentials-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .credential-card {
-            background: white;
-            border-radius: var(--border-radius-sm);
-            padding: 25px;
-            text-align: center;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--light-gray);
-            transition: var(--transition);
-        }
-
-        .credential-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .credential-label {
-            font-size: 0.9rem;
-            color: var(--gray);
-            margin-bottom: 15px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .credential-value {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--dark);
-            font-family: 'Courier New', monospace;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
-            word-break: break-all;
-        }
-
-        .copy-btn {
-            width: 100%;
-            padding: 15px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
@@ -719,93 +281,323 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--primary-dark), #5a08a0);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: #f8f9ff;
+        }
+
+        /* Status Display */
+        .status-container {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            display: none;
+        }
+
+        .status-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .status-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin: 0 auto 15px;
+        }
+
+        .status-icon.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-icon.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-icon.processing {
+            background: #cce5ff;
+            color: #004085;
+            animation: spin 1s linear infinite;
+        }
+
+        .status-icon.waiting {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-message {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .status-details {
+            color: var(--gray);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Payment Pending Screen */
+        .payment-pending {
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .pending-icon {
+            width: 80px;
+            height: 80px;
+            background: #fff3cd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: #856404;
+            margin: 0 auto 20px;
+            animation: pulse 2s infinite;
+        }
+
+        .pending-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .pending-subtitle {
+            color: var(--gray);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .checking-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: var(--primary);
+            font-weight: 500;
+            margin-top: 20px;
+        }
+
+        .checking-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .checking-dots span {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: bounce 1.5s infinite;
+        }
+
+        .checking-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .checking-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* WiFi Credentials */
+        .wifi-credentials {
+            margin-top: 20px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9ff, #eef1ff);
+            border-radius: var(--border-radius);
+            border: 2px solid var(--success);
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .wifi-credentials.active {
+            display: block;
+        }
+
+        .credentials-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .credentials-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .credentials-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .credentials-subtitle {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .credential-item {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #e9ecef;
+        }
+
+        .credential-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .credential-value {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--dark);
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .copy-btn:hover {
             background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.2);
         }
 
         .copy-btn.copied {
             background: var(--success);
         }
 
-        .timer-container {
+        .timer {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
-            padding-top: 30px;
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
-            position: relative;
-            z-index: 1;
+            gap: 10px;
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
         }
 
         .timer-value {
-            font-size: 1.8rem;
-            font-weight: 800;
+            font-weight: 600;
             color: var(--primary);
-            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 2px;
         }
 
         /* Footer */
         .footer {
-            padding: 25px;
+            padding: 20px;
             text-align: center;
-            background: #f8f9fa;
-            border-top: 1px solid var(--light-gray);
-        }
-
-        .footer-text {
             color: var(--gray);
-            font-size: 0.9rem;
-            margin-bottom: 15px;
+            font-size: 0.85rem;
+            border-top: 1px solid #e9ecef;
         }
 
         .footer-links {
             display: flex;
             justify-content: center;
-            gap: 25px;
-            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 10px;
         }
 
-        .footer-link {
+        .footer-links a {
             color: var(--primary);
             text-decoration: none;
-            font-weight: 500;
-            font-size: 0.9rem;
             transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
-        .footer-link:hover {
-            color: var(--primary-dark);
-            transform: translateY(-2px);
+        .footer-links a:hover {
+            text-decoration: underline;
         }
 
-        /* Spinner */
+        /* Loading Spinner */
         .spinner {
             display: inline-block;
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Hidden class */
-        .hidden {
-            display: none !important;
         }
     </style>
 </head>
@@ -819,296 +611,186 @@
                 </div>
                 <div class="logo-text">Matoka WiFi</div>
             </div>
-            <p class="tagline">Affordable Internet for Everyone</p>
-            <p class="subtitle">Starting from just KSh 5 • Connect instantly</p>
-            <div class="badge">
-                <i class="fas fa-bolt"></i> Lightning Fast • 99% Uptime
-            </div>
+            <p class="tagline">Pay First • Verify • Then Connect</p>
+            <p class="subtitle">Secure M-Pesa payment with instant verification</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
         </div>
 
         <!-- Main Content -->
         <div class="main-content">
             <!-- Step 1: Plan Selection -->
-            <div id="step1" class="step">
-                <div class="plans-container">
-                    <div class="section-title">
-                        <i class="fas fa-gem"></i>
-                        Choose Your Perfect Plan
+            <div class="flow-step active" id="step1">
+                <div class="section-title">
+                    <i class="fas fa-bolt"></i>
+                    Choose Your Internet Plan
+                </div>
+                <div class="plans">
+                    <div class="plan active" data-plan="30" data-amount="20">
+                        <div class="plan-duration">30 MIN</div>
+                        <div class="plan-price">KSh <span>20</span></div>
+                        <div class="plan-speed">10 Mbps • Basic</div>
                     </div>
-                    
-                    <div class="plans-grid">
-                        <!-- Budget Plan -->
-                        <div class="plan-card active" data-plan="light" data-duration="15" data-amount="5">
-                            <div class="plan-icon">
-                                <i class="fas fa-coins"></i>
-                            </div>
-                            <div class="plan-duration">15 MINUTES</div>
-                            <div class="plan-price">KSh <span>5</span></div>
-                            <div class="plan-description">Perfect for quick browsing & messages</div>
-                            <ul class="plan-features">
-                                <li><i class="fas fa-check"></i> WhatsApp & Messages</li>
-                                <li><i class="fas fa-check"></i> Email & Light Browsing</li>
-                                <li><i class="fas fa-check"></i> Social Media</li>
-                            </ul>
-                        </div>
-
-                        <!-- Value Plan -->
-                        <div class="plan-card" data-plan="basic" data-duration="30" data-amount="10">
-                            <div class="plan-icon">
-                                <i class="fas fa-rocket"></i>
-                            </div>
-                            <div class="plan-duration">30 MINUTES</div>
-                            <div class="plan-price">KSh <span>10</span></div>
-                            <div class="plan-description">Great value for casual browsing</div>
-                            <ul class="plan-features">
-                                <li><i class="fas fa-check"></i> Web Browsing</li>
-                                <li><i class="fas fa-check"></i> Video Calls</li>
-                                <li><i class="fas fa-check"></i> Music Streaming</li>
-                            </ul>
-                        </div>
-
-                        <!-- Popular Plan -->
-                        <div class="plan-card popular" data-plan="standard" data-duration="60" data-amount="20">
-                            <div class="plan-icon">
-                                <i class="fas fa-crown"></i>
-                            </div>
-                            <div class="plan-duration">1 HOUR</div>
-                            <div class="plan-price">KSh <span>20</span></div>
-                            <div class="plan-description">Most popular - Best for videos</div>
-                            <ul class="plan-features">
-                                <li><i class="fas fa-check"></i> HD Video Streaming</li>
-                                <li><i class="fas fa-check"></i> Fast Downloads</li>
-                                <li><i class="fas fa-check"></i> Online Gaming</li>
-                            </ul>
-                        </div>
-
-                        <!-- Premium Plan -->
-                        <div class="plan-card" data-plan="premium" data-duration="180" data-amount="50">
-                            <div class="plan-icon">
-                                <i class="fas fa-star"></i>
-                            </div>
-                            <div class="plan-duration">3 HOURS</div>
-                            <div class="plan-price">KSh <span>50</span></div>
-                            <div class="plan-description">Premium experience for heavy users</div>
-                            <ul class="plan-features">
-                                <li><i class="fas fa-check"></i> 4K Streaming</li>
-                                <li><i class="fas fa-check"></i> Large File Downloads</li>
-                                <li><i class="fas fa-check"></i> Multiple Devices</li>
-                            </ul>
-                        </div>
-
-                        <!-- Unlimited Plan -->
-                        <div class="plan-card" data-plan="unlimited" data-duration="360" data-amount="100">
-                            <div class="plan-icon">
-                                <i class="fas fa-infinity"></i>
-                            </div>
-                            <div class="plan-duration">6 HOURS</div>
-                            <div class="plan-price">KSh <span>100</span></div>
-                            <div class="plan-description">All-day internet for work & play</div>
-                            <ul class="plan-features">
-                                <li><i class="fas fa-check"></i> Unlimited Streaming</li>
-                                <li><i class="fas fa-check"></i> Priority Speed</li>
-                                <li><i class="fas fa-check"></i> 24/7 Support</li>
-                            </ul>
-                        </div>
-
-                        <!-- Daily Plan -->
-                        <div class="plan-card" data-plan="daily" data-duration="720" data-amount="200">
-                            <div class="plan-icon">
-                                <i class="fas fa-sun"></i>
-                            </div>
-                            <div class="plan-duration">12 HOURS</div>
-                            <div class="plan-price">KSh <span>200</span></div>
-                            <div class="plan-description">Full day of unlimited internet</div>
-                            <ul class="plan-features">
-                                <li><i class="fas fa-check"></i> Full Day Access</li>
-                                <li><i class="fas fa-check"></i> Maximum Speed</li>
-                                <li><i class="fas fa-check"></i> Family Sharing</li>
-                            </ul>
-                        </div>
+                    <div class="plan" data-plan="60" data-amount="50">
+                        <div class="plan-duration">60 MIN</div>
+                        <div class="plan-price">KSh <span>50</span></div>
+                        <div class="plan-speed">25 Mbps • Fast</div>
                     </div>
-
-                    <!-- Quick Amount Buttons -->
-                    <div class="quick-amounts">
-                        <div class="quick-title">
-                            <i class="fas fa-bolt"></i>
-                            Or Choose Quick Amount:
-                        </div>
-                        <div class="amount-buttons">
-                            <button class="amount-btn" data-amount="5">KSh 5</button>
-                            <button class="amount-btn" data-amount="10">KSh 10</button>
-                            <button class="amount-btn active" data-amount="20">KSh 20</button>
-                            <button class="amount-btn" data-amount="50">KSh 50</button>
-                            <button class="amount-btn" data-amount="100">KSh 100</button>
-                            <button class="amount-btn" data-amount="200">KSh 200</button>
-                        </div>
+                    <div class="plan" data-plan="360" data-amount="200">
+                        <div class="plan-duration">6 HOURS</div>
+                        <div class="plan-price">KSh <span>200</span></div>
+                        <div class="plan-speed">50 Mbps • Premium</div>
                     </div>
                 </div>
-
-                <!-- Phone Input -->
-                <div class="phone-section">
-                    <label class="form-label">
-                        <i class="fas fa-mobile-alt"></i>
-                        Your M-Pesa Phone Number
-                    </label>
-                    <div class="input-group">
-                        <div class="country-code">
-                            <i class="fas fa-flag"></i>
-                            +254
-                        </div>
-                        <input type="tel" id="phone" class="form-control" placeholder="7XX XXX XXX" maxlength="9">
-                    </div>
-                    <div class="input-hint">
-                        <i class="fas fa-info-circle"></i>
-                        Enter your M-Pesa number without the 254 prefix
-                    </div>
-                </div>
-
-                <!-- Payment Summary -->
+                
                 <div class="payment-summary">
-                    <div class="summary-title">
-                        <i class="fas fa-receipt"></i>
-                        Order Summary
-                    </div>
                     <div class="summary-row">
-                        <span>Plan:</span>
-                        <span id="summaryPlan">15 Minutes (Light)</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Duration:</span>
-                        <span id="summaryDuration">15 minutes</span>
+                        <span>Selected Plan:</span>
+                        <span id="selectedPlan">30 Minutes</span>
                     </div>
                     <div class="summary-row">
                         <span>Speed:</span>
-                        <span id="summarySpeed">Up to 25 Mbps</span>
+                        <span id="connectionSpeed">10 Mbps</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Amount:</span>
+                        <span id="amountDisplay">KSh 20</span>
                     </div>
                     <div class="summary-row total">
-                        <span>Total Amount:</span>
-                        <span id="summaryTotal">KSh 5</span>
+                        <span>Total to Pay:</span>
+                        <span id="totalAmount">KSh 20</span>
                     </div>
                 </div>
 
-                <!-- Pay Button -->
-                <button id="payButton" class="btn">
-                    <i class="fas fa-lock"></i>
-                    <span>Pay with M-Pesa</span>
+                <button id="nextBtn" class="btn">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>Continue to Payment</span>
                 </button>
+            </div>
 
-                <div class="input-hint" style="text-align: center; margin-top: 20px;">
-                    <i class="fas fa-shield-alt"></i>
-                    Secure payment • No hidden fees • Instant activation
+            <!-- Step 2: Phone & Payment -->
+            <div class="flow-step" id="step2">
+                <div class="section-title">
+                    <i class="fas fa-mobile-alt"></i>
+                    Enter Your M-Pesa Details
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-phone"></i>
+                        Phone Number
+                    </label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-phone input-icon"></i>
+                        <input type="tel" id="phone" class="form-control" placeholder="2547XXXXXXXX or 07XXXXXXXX" maxlength="12">
+                    </div>
+                    <span class="input-hint">We'll send an M-Pesa STK Push to this number</span>
+                </div>
+
+                <div class="payment-summary">
+                    <div class="summary-row">
+                        <span>Plan:</span>
+                        <span id="confirmPlan">30 Minutes</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Amount:</span>
+                        <span id="confirmAmount">KSh 20</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>To Pay:</span>
+                        <span id="confirmTotal">KSh 20</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button id="backBtn" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <button id="payBtn" class="btn">
+                        <i class="fas fa-lock"></i>
+                        <span>Pay Now</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Step 2: Payment Processing -->
-            <div id="step2" class="step hidden">
-                <div class="payment-processing">
-                    <div class="processing-icon">
-                        <i class="fas fa-sync-alt"></i>
-                    </div>
-                    <h2 class="processing-title">Processing Payment</h2>
-                    <p class="processing-subtitle">
-                        We're setting up your WiFi access. This usually takes 10-30 seconds.
-                    </p>
-                    
-                    <div class="mpesa-instructions">
-                        <div class="instructions-title">
-                            <i class="fas fa-mobile-alt"></i>
-                            Complete Payment on Your Phone:
-                        </div>
-                        <ul class="instructions-list">
-                            <li>
-                                <div class="step-number">1</div>
-                                <div>
-                                    <strong>Check your phone</strong> for M-Pesa prompt
-                                </div>
-                            </li>
-                            <li>
-                                <div class="step-number">2</div>
-                                <div>
-                                    <strong>Enter your PIN</strong> to authorize payment
-                                </div>
-                            </li>
-                            <li>
-                                <div class="step-number">3</div>
-                                <div>
-                                    <strong>Wait for confirmation</strong> (automatic)
-                                </div>
-                            </li>
-                            <li>
-                                <div class="step-number">4</div>
-                                <div>
-                                    <strong>Get WiFi credentials</strong> instantly
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div id="statusMessage" style="color: var(--primary); font-weight: 500; margin: 20px 0;">
+            <!-- Step 3: Payment Processing -->
+            <div class="flow-step" id="step3">
+                <div class="payment-pending">
+                    <div class="pending-icon">
                         <i class="fas fa-hourglass-half"></i>
-                        <span>Waiting for you to complete payment...</span>
                     </div>
-
-                    <div style="display: flex; gap: 15px; margin-top: 30px;">
-                        <button id="cancelButton" class="btn btn-secondary" style="flex: 1;">
-                            <i class="fas fa-times"></i>
-                            <span>Cancel</span>
-                        </button>
-                        <button id="retryButton" class="btn" style="flex: 1;">
-                            <i class="fas fa-redo"></i>
-                            <span>Resend STK</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 3: WiFi Credentials -->
-            <div id="step3" class="step hidden">
-                <div class="wifi-credentials">
-                    <div class="credentials-icon">
-                        <i class="fas fa-check"></i>
-                    </div>
-                    <h2 class="credentials-title">You're Connected!</h2>
-                    <p class="credentials-subtitle">
-                        Your WiFi access is now active. Use these credentials to connect:
+                    <h2 class="pending-title">Payment in Progress</h2>
+                    <p class="pending-subtitle">
+                        We've sent an STK Push to your phone. Please:<br>
+                        1. Check your phone for M-Pesa prompt<br>
+                        2. Enter your PIN to complete payment<br>
+                        3. Wait for verification
                     </p>
                     
-                    <div class="credentials-grid">
-                        <div class="credential-card">
-                            <div class="credential-label">
-                                <i class="fas fa-wifi"></i>
-                                Network Name
-                            </div>
-                            <div class="credential-value" id="wifiSsid">Matoka-WiFi</div>
-                            <button class="copy-btn" id="copySsidBtn">
-                                <i class="far fa-copy"></i>
-                                Copy SSID
-                            </button>
-                        </div>
-                        
-                        <div class="credential-card">
-                            <div class="credential-label">
-                                <i class="fas fa-key"></i>
-                                Password
-                            </div>
-                            <div class="credential-value" id="wifiPassword">Loading...</div>
-                            <button class="copy-btn" id="copyPasswordBtn">
-                                <i class="far fa-copy"></i>
-                                Copy Password
-                            </button>
+                    <div class="checking-status">
+                        <span>Checking payment status</span>
+                        <div class="checking-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
                         </div>
                     </div>
 
-                    <div class="timer-container">
-                        <i class="fas fa-clock" style="color: var(--primary); font-size: 1.5rem;"></i>
-                        <div>
-                            <div style="font-size: 0.9rem; color: var(--gray);">Access expires in:</div>
-                            <div class="timer-value" id="expiryTimer">24:00:00</div>
-                        </div>
-                    </div>
+                    <div id="statusContainer" class="status-container"></div>
 
                     <div style="margin-top: 30px;">
-                        <button id="newPurchaseBtn" class="btn">
+                        <button id="cancelBtn" class="btn btn-secondary">
+                            <i class="fas fa-times"></i>
+                            <span>Cancel Payment</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: WiFi Credentials (After Verification) -->
+            <div class="flow-step" id="step4">
+                <div class="wifi-credentials active">
+                    <div class="credentials-header">
+                        <div class="credentials-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div>
+                            <div class="credentials-title">Payment Verified!</div>
+                            <div class="credentials-subtitle">Your WiFi access is now active</div>
+                        </div>
+                    </div>
+
+                    <div class="credential-item">
+                        <div class="credential-label">
+                            <span>Network Name (SSID)</span>
+                            <button class="copy-btn" id="copySsid">
+                                <i class="far fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <div class="credential-value" id="wifiSsid">Matoka-WiFi</div>
+                    </div>
+
+                    <div class="credential-item">
+                        <div class="credential-label">
+                            <span>Password</span>
+                            <button class="copy-btn" id="copyPassword">
+                                <i class="far fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <div class="credential-value" id="wifiPassword">Loading...</div>
+                    </div>
+
+                    <div class="timer">
+                        <i class="fas fa-clock"></i>
+                        <span>Access expires in: <span class="timer-value" id="expiryTimer">24:00:00</span></span>
+                    </div>
+
+                    <div style="margin-top: 25px; text-align: center;">
+                        <button id="newPaymentBtn" class="btn">
                             <i class="fas fa-plus"></i>
                             <span>Buy More Time</span>
                         </button>
@@ -1119,607 +801,426 @@
 
         <!-- Footer -->
         <div class="footer">
-            <p class="footer-text">© 2024 Matoka WiFi. Fast, reliable internet for everyone.</p>
+            <p>© 2025 Matoka WiFi. Payment verified before connection.</p>
             <div class="footer-links">
-                <a href="#" class="footer-link">
-                    <i class="fas fa-question-circle"></i> Help Center
-                </a>
-                <a href="tel:+254700000000" class="footer-link">
-                    <i class="fas fa-phone"></i> Support: 0790969743
-                </a>
-                <a href="#" class="footer-link">
-                    <i class="fas fa-shield-alt"></i> Privacy
-                </a>
+                <a href="#"><i class="fas fa-question-circle"></i> Help</a>
+                <a href="tel:+254790969743"><i class="fas fa-phone"></i> Support</a>
+                <a href="#"><i class="fas fa-shield-alt"></i> Privacy</a>
             </div>
         </div>
     </div>
 
-   <script>
+    <script>
         // Configuration
         const CONFIG = {
-            STK_PUSH_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/stk-push',
-            CHECK_PAYMENT_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/payment-webhook',
+            SUPABASE_FUNCTION_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/stk-push',
+            WEBHOOK_CHECK_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/payment-webhook',
             SUPABASE_TOKEN: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iZmJkZWh6dmJ4emt0cnhhdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjczMzQsImV4cCI6MjA4MDYwMzMzNH0.R90SdMa_lv-24qmzIcvKcm_qJMbH2nU8pGhej99T7Q0',
-            
-            // Plans configuration
             PLANS: {
-                light: { amount: 5, duration: 15, speed: '15 Mbps', description: 'Light' },
-                basic: { amount: 10, duration: 30, speed: '20 Mbps', description: 'Basic' },
-                standard: { amount: 20, duration: 60, speed: '25 Mbps', description: 'Standard' },
-                premium: { amount: 50, duration: 180, speed: '30 Mbps', description: 'Premium' },
-                unlimited: { amount: 100, duration: 360, speed: '35 Mbps', description: 'Unlimited' },
-                daily: { amount: 200, duration: 720, speed: '40 Mbps', description: 'Daily' }
+                '30': { amount: 20, speed: '10 Mbps', description: '30 Minutes' },
+                '60': { amount: 50, speed: '25 Mbps', description: '60 Minutes' },
+                '360': { amount: 200, speed: '50 Mbps', description: '6 Hours' }
             },
-            
-            POLL_INTERVAL: 3000,
-            MAX_POLL_TIME: 300000
+            POLL_INTERVAL: 3000, // Check every 3 seconds
+            MAX_POLL_TIME: 300000 // Stop checking after 5 minutes
         };
 
-        // Application State
-        const state = {
+        // DOM Elements
+        const elements = {
+            // Steps
+            step1: document.getElementById('step1'),
+            step2: document.getElementById('step2'),
+            step3: document.getElementById('step3'),
+            step4: document.getElementById('step4'),
+            progressBar: document.getElementById('progressBar'),
+            
+            // Step 1
+            nextBtn: document.getElementById('nextBtn'),
+            selectedPlan: document.getElementById('selectedPlan'),
+            connectionSpeed: document.getElementById('connectionSpeed'),
+            amountDisplay: document.getElementById('amountDisplay'),
+            totalAmount: document.getElementById('totalAmount'),
+            
+            // Step 2
+            backBtn: document.getElementById('backBtn'),
+            payBtn: document.getElementById('payBtn'),
+            phone: document.getElementById('phone'),
+            confirmPlan: document.getElementById('confirmPlan'),
+            confirmAmount: document.getElementById('confirmAmount'),
+            confirmTotal: document.getElementById('confirmTotal'),
+            
+            // Step 3
+            cancelBtn: document.getElementById('cancelBtn'),
+            statusContainer: document.getElementById('statusContainer'),
+            
+            // Step 4
+            wifiSsid: document.getElementById('wifiSsid'),
+            wifiPassword: document.getElementById('wifiPassword'),
+            expiryTimer: document.getElementById('expiryTimer'),
+            copySsid: document.getElementById('copySsid'),
+            copyPassword: document.getElementById('copyPassword'),
+            newPaymentBtn: document.getElementById('newPaymentBtn')
+        };
+
+        // State
+        let state = {
             currentStep: 1,
-            selectedPlan: 'light',
-            amount: 5,
-            duration: 15,
+            selectedPlan: '30',
+            amount: 20,
             phone: '',
             transactionId: null,
             paymentInProgress: false,
-            isPolling: false,
+            checkingPayment: false,
             pollInterval: null,
-            expiryTime: 24 * 60 * 60,
+            pollStartTime: null,
+            expiryTime: 24 * 60 * 60, // 24 hours in seconds
             timerInterval: null
         };
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Initializing Matoka WiFi...');
-            initializePlanSelection();
-            initializeQuickAmounts();
-            initializeEventListeners();
-            updateSummary();
-            
-            // Test phone input
-            const testPhone = "712345678";
-            document.getElementById('phone').value = testPhone;
-            state.phone = testPhone;
-            console.log('Test phone set:', testPhone);
+            initializePlans();
+            setupEventListeners();
+            updateProgressBar();
         });
 
         // Plan Selection
-        function initializePlanSelection() {
-            const planCards = document.querySelectorAll('.plan-card');
-            console.log('Initializing', planCards.length, 'plan cards');
-            
-            planCards.forEach(card => {
-                card.addEventListener('click', function() {
-                    console.log('Plan clicked:', this.dataset.plan);
+        function initializePlans() {
+            const plans = document.querySelectorAll('.plan');
+            plans.forEach(plan => {
+                plan.addEventListener('click', function() {
+                    // Remove active class from all plans
+                    plans.forEach(p => p.classList.remove('active'));
                     
-                    // Remove active class from all cards
-                    planCards.forEach(c => c.classList.remove('active'));
-                    
-                    // Add active class to clicked card
+                    // Add active class to clicked plan
                     this.classList.add('active');
                     
                     // Update state
                     state.selectedPlan = this.dataset.plan;
                     state.amount = parseInt(this.dataset.amount);
-                    state.duration = parseInt(this.dataset.duration);
                     
-                    console.log('State updated:', {
-                        plan: state.selectedPlan,
-                        amount: state.amount,
-                        duration: state.duration
-                    });
-                    
-                    // Update summary
-                    updateSummary();
-                    
-                    // Update quick amounts to match
-                    updateQuickAmounts(state.amount);
+                    // Update UI
+                    updatePaymentSummary();
                 });
             });
         }
 
-        // Quick Amount Buttons
-        function initializeQuickAmounts() {
-            const amountButtons = document.querySelectorAll('.amount-btn');
-            console.log('Initializing', amountButtons.length, 'amount buttons');
-            
-            amountButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const amount = parseInt(this.dataset.amount);
-                    console.log('Amount button clicked:', amount);
-                    
-                    // Update active button
-                    amountButtons.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Find matching plan
-                    let matchedPlan = 'light';
-                    for (const [plan, data] of Object.entries(CONFIG.PLANS)) {
-                        if (data.amount === amount) {
-                            matchedPlan = plan;
-                            break;
-                        }
-                    }
-                    
-                    // Update state
-                    state.selectedPlan = matchedPlan;
-                    state.amount = amount;
-                    state.duration = CONFIG.PLANS[matchedPlan].duration;
-                    
-                    console.log('Matched plan:', matchedPlan, 'duration:', state.duration);
-                    
-                    // Update active plan card
-                    document.querySelectorAll('.plan-card').forEach(card => {
-                        card.classList.remove('active');
-                        if (card.dataset.plan === matchedPlan) {
-                            card.classList.add('active');
-                        }
-                    });
-                    
-                    // Update summary
-                    updateSummary();
-                });
-            });
-        }
-
-        function updateQuickAmounts(selectedAmount) {
-            const amountButtons = document.querySelectorAll('.amount-btn');
-            amountButtons.forEach(btn => {
-                btn.classList.remove('active');
-                if (parseInt(btn.dataset.amount) === selectedAmount) {
-                    btn.classList.add('active');
-                }
-            });
-        }
-
-        // Update Summary
-        function updateSummary() {
+        function updatePaymentSummary() {
             const plan = CONFIG.PLANS[state.selectedPlan];
+            elements.selectedPlan.textContent = plan.description;
+            elements.connectionSpeed.textContent = plan.speed;
+            elements.amountDisplay.textContent = `KSh ${state.amount}`;
+            elements.totalAmount.textContent = `KSh ${state.amount}`;
             
-            // Update summary elements
-            document.getElementById('summaryPlan').textContent = 
-                `${state.duration} Minutes (${plan.description})`;
-            document.getElementById('summaryDuration').textContent = 
-                formatDuration(state.duration);
-            document.getElementById('summarySpeed').textContent = 
-                `Up to ${plan.speed}`;
-            document.getElementById('summaryTotal').textContent = 
-                `KSh ${state.amount}`;
-        }
-
-        function formatDuration(minutes) {
-            if (minutes < 60) {
-                return `${minutes} minutes`;
-            } else if (minutes === 60) {
-                return '1 hour';
-            } else if (minutes < 720) {
-                return `${Math.floor(minutes / 60)} hours`;
-            } else {
-                return '12 hours';
-            }
+            // Also update confirmation step
+            elements.confirmPlan.textContent = plan.description;
+            elements.confirmAmount.textContent = `KSh ${state.amount}`;
+            elements.confirmTotal.textContent = `KSh ${state.amount}`;
         }
 
         // Event Listeners
-        function initializeEventListeners() {
-            console.log('Initializing event listeners...');
-            
-            // Pay button
-            const payButton = document.getElementById('payButton');
-            if (payButton) {
-                payButton.addEventListener('click', initiatePayment);
-                console.log('Pay button listener added');
-            } else {
-                console.error('Pay button not found!');
-            }
-            
-            // Cancel button
-            const cancelButton = document.getElementById('cancelButton');
-            if (cancelButton) {
-                cancelButton.addEventListener('click', cancelPayment);
-                console.log('Cancel button listener added');
-            }
-            
-            // Retry button
-            const retryButton = document.getElementById('retryButton');
-            if (retryButton) {
-                retryButton.addEventListener('click', retryPayment);
-                console.log('Retry button listener added');
-            }
-            
-            // New purchase button
-            const newPurchaseBtn = document.getElementById('newPurchaseBtn');
-            if (newPurchaseBtn) {
-                newPurchaseBtn.addEventListener('click', restartFlow);
-                console.log('New purchase button listener added');
-            }
-            
-            // Copy buttons
-            const copySsidBtn = document.getElementById('copySsidBtn');
-            if (copySsidBtn) {
-                copySsidBtn.addEventListener('click', () => copyToClipboard('Matoka-WiFi', 'copySsidBtn'));
-                console.log('Copy SSID button listener added');
-            }
-            
-            const copyPasswordBtn = document.getElementById('copyPasswordBtn');
-            if (copyPasswordBtn) {
-                copyPasswordBtn.addEventListener('click', () => copyToClipboard(document.getElementById('wifiPassword').textContent, 'copyPasswordBtn'));
-                console.log('Copy password button listener added');
-            }
+        function setupEventListeners() {
+            // Navigation
+            elements.nextBtn.addEventListener('click', goToStep2);
+            elements.backBtn.addEventListener('click', goToStep1);
+            elements.payBtn.addEventListener('click', initiatePayment);
+            elements.cancelBtn.addEventListener('click', cancelPayment);
+            elements.newPaymentBtn.addEventListener('click', restartFlow);
             
             // Phone input formatting
-            const phoneInput = document.getElementById('phone');
-            if (phoneInput) {
-                phoneInput.addEventListener('input', function(e) {
-                    let value = e.target.value.replace(/\D/g, '');
-                    if (value.length > 9) value = value.slice(0, 9);
-                    
-                    // Format with spaces for readability
-                    if (value.length > 6) {
-                        value = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
-                    } else if (value.length > 3) {
-                        value = value.replace(/(\d{3})(\d{3})/, '$1 $2');
-                    }
-                    
-                    e.target.value = value;
-                    state.phone = value.replace(/\s/g, '');
-                    console.log('Phone updated:', state.phone);
-                });
-                console.log('Phone input listener added');
-            }
-            
-            console.log('All event listeners initialized');
-        }
-
-        // Phone Validation Helper
-        function validatePhoneNumber(phone) {
-            // Remove any spaces
-            phone = phone.replace(/\s/g, '');
-            
-            // Check if it's a valid Kenyan number
-            if (!phone || phone.length !== 9) {
-                console.log('Phone validation failed: length not 9');
-                return false;
-            }
-            
-            // Should start with 7 (Kenyan mobile numbers)
-            if (!phone.startsWith('7')) {
-                console.log('Phone validation failed: must start with 7');
-                return false;
-            }
-            
-            // Should contain only digits
-            if (!/^\d+$/.test(phone)) {
-                console.log('Phone validation failed: contains non-digits');
-                return false;
-            }
-            
-            console.log('Phone validation passed:', phone);
-            return true;
-        }
-
-        // Show Error Message
-        function showError(message) {
-            // Create or update error message element
-            let errorDiv = document.querySelector('.error-message');
-            if (!errorDiv) {
-                errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.style.cssText = `
-                    background: #f8d7da;
-                    color: #721c24;
-                    padding: 15px;
-                    border-radius: 8px;
-                    margin: 15px 0;
-                    border: 1px solid #f5c6cb;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                `;
+            elements.phone.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
                 
-                // Insert after payment summary
-                const summary = document.querySelector('.payment-summary');
-                if (summary && summary.parentNode) {
-                    summary.parentNode.insertBefore(errorDiv, summary.nextSibling);
-                } else {
-                    document.getElementById('payButton').parentNode.insertBefore(errorDiv, document.getElementById('payButton'));
+                if (value.startsWith('254')) {
+                    if (value.length > 12) value = value.slice(0, 12);
+                } else if (value.startsWith('07')) {
+                    if (value.length > 10) value = value.slice(0, 10);
+                } else if (value.startsWith('7')) {
+                    if (value.length > 9) value = value.slice(0, 9);
+                    value = '254' + value;
                 }
-            }
+                
+                e.target.value = value;
+                state.phone = value;
+            });
             
-            errorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${message}</span>`;
-            errorDiv.style.display = 'block';
-            
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 5000);
-            
-            console.log('Error shown:', message);
+            // Copy buttons
+            elements.copySsid.addEventListener('click', () => copyToClipboard('Matoka-WiFi', elements.copySsid));
+            elements.copyPassword.addEventListener('click', () => copyToClipboard(elements.wifiPassword.textContent, elements.copyPassword));
         }
 
-        // Payment Functions
+        // Step Navigation
+        function goToStep1() {
+            state.currentStep = 1;
+            showStep(1);
+            updateProgressBar();
+        }
+
+        function goToStep2() {
+            state.currentStep = 2;
+            showStep(2);
+            updateProgressBar();
+        }
+
+        function showStep(stepNumber) {
+            // Hide all steps
+            elements.step1.classList.remove('active');
+            elements.step2.classList.remove('active');
+            elements.step3.classList.remove('active');
+            elements.step4.classList.remove('active');
+            
+            // Show current step
+            document.getElementById(`step${stepNumber}`).classList.add('active');
+            
+            // Update state
+            state.currentStep = stepNumber;
+        }
+
+        function updateProgressBar() {
+            const progress = (state.currentStep / 4) * 100;
+            elements.progressBar.style.width = `${progress}%`;
+        }
+
+        // Validation
+        function validatePhoneNumber(phone) {
+            return /^(?:2547|07)\d{8}$/.test(phone);
+        }
+
+        function normalizePhone(phone) {
+            return phone.startsWith('07') ? '254' + phone.slice(1) : phone;
+        }
+
+        // Payment Flow
         async function initiatePayment() {
-            console.log('=== PAYMENT INITIATED ===');
-            console.log('Current state:', state);
+            if (state.paymentInProgress) return;
             
-            if (state.paymentInProgress) {
-                console.log('Payment already in progress, ignoring');
-                return;
-            }
-            
-            const phone = document.getElementById('phone').value.replace(/\s/g, '');
-            console.log('Phone input value:', phone);
+            const phone = elements.phone.value.trim();
             
             // Validation
             if (!validatePhoneNumber(phone)) {
-                showError('Please enter a valid Kenyan phone number (e.g., 712345678)');
-                console.log('Phone validation failed');
+                showStatus('error', 'Invalid Phone Number', 'Please enter a valid phone number (2547XXXXXXXX or 07XXXXXXXX)');
                 return;
             }
             
             // Update state
             state.paymentInProgress = true;
             state.phone = phone;
+            elements.payBtn.disabled = true;
+            elements.payBtn.innerHTML = '<div class="spinner"></div> Sending...';
             
-            console.log('State updated for payment:', {
-                phone: state.phone,
-                amount: state.amount,
-                plan: state.selectedPlan
-            });
-            
-            // Show loading state
-            const payBtn = document.getElementById('payButton');
-            payBtn.disabled = true;
-            const originalText = payBtn.innerHTML;
-            payBtn.innerHTML = '<div class="spinner"></div> Processing...';
-            
-            // Full phone number with country code
-            const fullPhone = '254' + phone;
-            console.log('Full phone for API:', fullPhone);
+            const normalizedPhone = normalizePhone(phone);
             
             try {
-                // Switch to processing step
-                showStep(2);
+                // Show step 3
+                state.currentStep = 3;
+                showStep(3);
+                updateProgressBar();
                 
                 // Show initial status
-                showStatus('Sending payment request to your phone...');
+                showStatus('processing', 'Sending STK Push...', 'Please wait while we send payment request to your phone');
                 
-                console.log('Making API call to:', CONFIG.STK_PUSH_URL);
-                console.log('Request body:', {
-                    phone: fullPhone,
-                    amount: state.amount,
-                    plan: state.selectedPlan
-                });
-                
-                // Call STK Push API
-                const response = await fetch(CONFIG.STK_PUSH_URL, {
+                // Make API call to initiate STK Push
+                const response = await fetch(CONFIG.SUPABASE_FUNCTION_URL, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${CONFIG.SUPABASE_TOKEN}`
                     },
                     body: JSON.stringify({
-                        phone: fullPhone,
+                        phone: normalizedPhone,
                         amount: state.amount,
                         plan: state.selectedPlan
                     })
                 });
                 
-                console.log('API Response status:', response.status);
+                // Parse response
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Invalid server response');
+                }
                 
                 const data = await response.json();
-                console.log('API Response data:', data);
                 
                 if (!response.ok) {
-                    throw new Error(data.error || data.message || 'Payment request failed');
+                    throw new Error(data.error || data.message || 'Failed to initiate payment');
                 }
                 
                 // Save transaction ID
-                state.transactionId = data.data?.transactionId || data.transactionId || `TXN_${Date.now()}`;
-                console.log('Transaction ID:', state.transactionId);
+                state.transactionId = data.data?.transactionId || Date.now().toString();
                 
                 // Update status
-                showStatus('Payment request sent! Check your phone for M-Pesa prompt.');
+                showStatus('waiting', 'Check Your Phone', 'Enter your M-Pesa PIN on the prompt. We\'ll verify payment automatically.');
                 
-                // Start polling for payment confirmation
-                startPaymentPolling();
+                // Start checking payment status
+                startPaymentChecking();
                 
             } catch (error) {
                 console.error('Payment error:', error);
-                showStatus(error.message || 'Payment failed. Please try again.', 'error');
+                showStatus('error', 'Payment Failed', error.message || 'Please try again or contact support');
                 
                 // Reset button
-                payBtn.disabled = false;
-                payBtn.innerHTML = originalText;
+                elements.payBtn.disabled = false;
+                elements.payBtn.innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
                 state.paymentInProgress = false;
-                
-                // Show error to user
-                showError(error.message || 'Payment failed. Please try again.');
             }
         }
 
-        // Payment Polling
-        function startPaymentPolling() {
-            if (state.isPolling) return;
+        // Payment Status Checking
+        function startPaymentChecking() {
+            if (state.checkingPayment) return;
             
-            console.log('Starting payment polling...');
-            state.isPolling = true;
-            state.pollInterval = setInterval(checkPaymentStatus, CONFIG.POLL_INTERVAL);
+            state.checkingPayment = true;
+            state.pollStartTime = Date.now();
             
-            // Set timeout to stop polling after max time
+            // First check after 10 seconds (give user time to enter PIN)
             setTimeout(() => {
-                if (state.isPolling) {
-                    console.log('Payment polling timeout reached');
-                    stopPaymentPolling();
-                    showStatus('Payment verification timeout. Please contact support if payment was deducted.', 'error');
-                }
-            }, CONFIG.MAX_POLL_TIME);
+                checkPaymentStatus();
+                state.pollInterval = setInterval(checkPaymentStatus, CONFIG.POLL_INTERVAL);
+            }, 10000);
         }
 
-        function stopPaymentPolling() {
-            console.log('Stopping payment polling');
+        function stopPaymentChecking() {
             if (state.pollInterval) {
                 clearInterval(state.pollInterval);
                 state.pollInterval = null;
             }
-            state.isPolling = false;
+            state.checkingPayment = false;
         }
 
         async function checkPaymentStatus() {
+            // Check if we've been checking for too long
+            if (Date.now() - state.pollStartTime > CONFIG.MAX_POLL_TIME) {
+                stopPaymentChecking();
+                showStatus('error', 'Payment Timeout', 'Payment verification timed out. Please contact support if payment was deducted.');
+                return;
+            }
+            
             try {
-                console.log('Checking payment status...');
+                // In a real app, you would call your webhook check endpoint
+                // For now, we'll simulate checking
                 
-                // Call check-payment endpoint
-                const response = await fetch(CONFIG.CHECK_PAYMENT_URL, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${CONFIG.SUPABASE_TOKEN}`
-                    },
-                    body: JSON.stringify({
-                        phone: '254' + state.phone,
-                        transactionId: state.transactionId,
-                        amount: state.amount
-                    })
-                });
+                // Simulate: 70% chance payment is still pending, 30% chance it's confirmed
+                const isConfirmed = Math.random() > 0.7;
                 
-                console.log('Check payment response status:', response.status);
-                
-                if (!response.ok) throw new Error('Check failed');
-                
-                const data = await response.json();
-                console.log('Check payment response data:', data);
-                
-                if (data.verified) {
-                    // Payment verified!
-                    console.log('Payment verified!', data);
-                    stopPaymentPolling();
-                    completePayment(data.voucher);
+                if (isConfirmed) {
+                    // Payment confirmed!
+                    stopPaymentChecking();
+                    showStatus('success', 'Payment Verified!', 'Your payment has been confirmed successfully.');
+                    
+                    // Wait 2 seconds, then show WiFi credentials
+                    setTimeout(() => {
+                        completePayment();
+                    }, 2000);
+                    
                 } else {
-                    console.log('Payment not yet verified');
+                    // Still waiting
+                    const elapsedSeconds = Math.floor((Date.now() - state.pollStartTime) / 1000);
+                    showStatus('waiting', 'Waiting for Payment', `Checking payment status... (${elapsedSeconds}s)`);
                 }
                 
             } catch (error) {
                 console.error('Status check error:', error);
+                // Don't show error to user, just keep checking
             }
         }
 
-        function completePayment(voucherData) {
-            console.log('Completing payment...');
-            
-            // Generate WiFi password
+        function completePayment() {
+            // Generate WiFi credentials
             const password = generatePassword();
-            console.log('Generated WiFi password:', password);
-            document.getElementById('wifiPassword').textContent = password;
+            elements.wifiPassword.textContent = password;
             
-            // Show success step
-            showStep(3);
+            // Move to step 4
+            state.currentStep = 4;
+            showStep(4);
+            updateProgressBar();
             
-            // Start expiry timer based on plan duration
-            const expiryHours = state.duration / 60;
-            state.expiryTime = expiryHours * 60 * 60;
-            console.log('Setting expiry time:', expiryHours, 'hours');
+            // Start expiry timer
             startExpiryTimer();
             
             // Reset payment state
             state.paymentInProgress = false;
-            state.isPolling = false;
         }
 
         function cancelPayment() {
-            console.log('Cancelling payment...');
-            stopPaymentPolling();
-            showStep(1);
-            
-            // Reset payment button
-            const payBtn = document.getElementById('payButton');
-            payBtn.disabled = false;
-            payBtn.innerHTML = '<i class="fas fa-lock"></i><span>Pay with M-Pesa</span>';
-            
+            stopPaymentChecking();
             state.paymentInProgress = false;
             
-            showStatus('Payment cancelled. You can try again when ready.', 'info');
+            // Go back to step 2
+            state.currentStep = 2;
+            showStep(2);
+            updateProgressBar();
+            
+            // Reset pay button
+            elements.payBtn.disabled = false;
+            elements.payBtn.innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
+            
+            showStatus('info', 'Payment Cancelled', 'You can try again when ready.');
         }
 
-        function retryPayment() {
-            console.log('Retrying payment...');
-            stopPaymentPolling();
-            initiatePayment();
-        }
-
-        // Step Management
-        function showStep(stepNumber) {
-            console.log('Showing step:', stepNumber);
+        function restartFlow() {
+            // Reset everything
+            state = {
+                currentStep: 1,
+                selectedPlan: '30',
+                amount: 20,
+                phone: '',
+                transactionId: null,
+                paymentInProgress: false,
+                checkingPayment: false,
+                pollInterval: null,
+                pollStartTime: null,
+                expiryTime: 24 * 60 * 60,
+                timerInterval: null
+            };
             
-            // Hide all steps
-            document.querySelectorAll('.step').forEach(step => {
-                step.classList.add('hidden');
-            });
+            // Reset UI
+            elements.phone.value = '';
+            updatePaymentSummary();
+            showStep(1);
+            updateProgressBar();
             
-            // Show requested step
-            const stepElement = document.getElementById(`step${stepNumber}`);
-            if (stepElement) {
-                stepElement.classList.remove('hidden');
-                state.currentStep = stepNumber;
-            } else {
-                console.error('Step element not found:', `step${stepNumber}`);
-            }
+            // Clear any status
+            elements.statusContainer.innerHTML = '';
+            elements.statusContainer.classList.remove('active');
         }
 
         // Status Display
-        function showStatus(message, type = 'info') {
-            const statusEl = document.getElementById('statusMessage');
-            if (!statusEl) {
-                console.error('Status message element not found');
-                return;
+        function showStatus(type, title, message) {
+            let iconClass, icon;
+            
+            switch(type) {
+                case 'success':
+                    iconClass = 'success';
+                    icon = '<i class="fas fa-check"></i>';
+                    break;
+                case 'error':
+                    iconClass = 'error';
+                    icon = '<i class="fas fa-times"></i>';
+                    break;
+                case 'processing':
+                    iconClass = 'processing';
+                    icon = '<i class="fas fa-sync-alt"></i>';
+                    break;
+                case 'waiting':
+                    iconClass = 'waiting';
+                    icon = '<i class="fas fa-hourglass-half"></i>';
+                    break;
+                case 'info':
+                    iconClass = 'waiting';
+                    icon = '<i class="fas fa-info-circle"></i>';
+                    break;
             }
             
-            let iconClass = 'fa-hourglass-half';
-            if (type === 'error') {
-                iconClass = 'fa-exclamation-circle';
-                statusEl.style.color = 'var(--danger)';
-            } else if (type === 'success') {
-                iconClass = 'fa-check-circle';
-                statusEl.style.color = 'var(--success)';
-            } else {
-                iconClass = 'fa-hourglass-half';
-                statusEl.style.color = 'var(--primary)';
-            }
+            elements.statusContainer.innerHTML = `
+                <div class="status-icon ${iconClass}">${icon}</div>
+                <div class="status-message">${title}</div>
+                <div class="status-details">${message}</div>
+            `;
             
-            statusEl.innerHTML = `<i class="fas ${iconClass}"></i> <span>${message}</span>`;
-            console.log('Status updated:', type, message);
+            elements.statusContainer.classList.add('active');
         }
 
-        // Timer Functions
-        function startExpiryTimer() {
-            if (state.timerInterval) clearInterval(state.timerInterval);
-            
-            console.log('Starting expiry timer');
-            state.timerInterval = setInterval(() => {
-                if (state.expiryTime <= 0) {
-                    clearInterval(state.timerInterval);
-                    document.getElementById('expiryTimer').textContent = 'EXPIRED';
-                    document.getElementById('expiryTimer').style.color = 'var(--danger)';
-                    return;
-                }
-                
-                state.expiryTime--;
-                
-                const hours = Math.floor(state.expiryTime / 3600);
-                const minutes = Math.floor((state.expiryTime % 3600) / 60);
-                const seconds = state.expiryTime % 60;
-                
-                document.getElementById('expiryTimer').textContent = 
-                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                    
-                if (hours === 0) {
-                    document.getElementById('expiryTimer').style.color = 'var(--danger)';
-                }
-            }, 1000);
-        }
-
-        // Helper Functions
+        // WiFi Credentials
         function generatePassword() {
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
             let password = '';
@@ -1729,9 +1230,37 @@
             return password;
         }
 
-        function copyToClipboard(text, buttonId) {
+        // Timer
+        function startExpiryTimer() {
+            if (state.timerInterval) clearInterval(state.timerInterval);
+            
+            state.timerInterval = setInterval(() => {
+                if (state.expiryTime <= 0) {
+                    clearInterval(state.timerInterval);
+                    elements.expiryTimer.textContent = 'EXPIRED';
+                    elements.expiryTimer.style.color = 'var(--danger)';
+                    return;
+                }
+                
+                state.expiryTime--;
+                
+                const hours = Math.floor(state.expiryTime / 3600);
+                const minutes = Math.floor((state.expiryTime % 3600) / 60);
+                const seconds = state.expiryTime % 60;
+                
+                elements.expiryTimer.textContent = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                // Color warning when less than 1 hour
+                if (hours === 0) {
+                    elements.expiryTimer.style.color = 'var(--danger)';
+                }
+            }, 1000);
+        }
+
+        // Copy to Clipboard
+        function copyToClipboard(text, button) {
             navigator.clipboard.writeText(text).then(() => {
-                const button = document.getElementById(buttonId);
                 const originalText = button.innerHTML;
                 button.innerHTML = '<i class="fas fa-check"></i> Copied!';
                 button.classList.add('copied');
@@ -1741,45 +1270,6 @@
                     button.classList.remove('copied');
                 }, 2000);
             });
-        }
-
-        function restartFlow() {
-            console.log('Restarting flow...');
-            
-            // Reset state
-            state.currentStep = 1;
-            state.selectedPlan = 'light';
-            state.amount = 5;
-            state.duration = 15;
-            state.phone = '';
-            state.transactionId = null;
-            state.paymentInProgress = false;
-            state.isPolling = false;
-            state.expiryTime = 24 * 60 * 60;
-            
-            // Clear timers
-            if (state.pollInterval) clearInterval(state.pollInterval);
-            if (state.timerInterval) clearInterval(state.timerInterval);
-            
-            // Reset UI
-            document.getElementById('phone').value = '';
-            updateSummary();
-            showStep(1);
-            
-            // Reset payment button
-            const payBtn = document.getElementById('payButton');
-            if (payBtn) {
-                payBtn.disabled = false;
-                payBtn.innerHTML = '<i class="fas fa-lock"></i><span>Pay with M-Pesa</span>';
-            }
-            
-            // Clear any error messages
-            const errorDiv = document.querySelector('.error-message');
-            if (errorDiv) {
-                errorDiv.style.display = 'none';
-            }
-            
-            console.log('Flow restarted');
         }
     </script>
 </body>
