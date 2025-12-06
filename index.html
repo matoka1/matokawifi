@@ -44,6 +44,17 @@
       font-size: 15px;
     }
 
+    /* Styles for the new input field */
+    .pay-details input {
+      width: 90%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box; /* Ensures padding is included in width */
+    }
+
     button {
       background: #007bff;
       color: white;
@@ -58,6 +69,11 @@
     button:hover {
       background: #0056b3;
     }
+    
+    button:disabled {
+        background: #a0a0a0;
+        cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -67,27 +83,79 @@
     <p>Access fast internet in seconds!</p>
 
     <div class="pay-details">
-      <p><strong>Pay to:</strong> <br> <span style="color:#007bff;">0700 123 456</span></p>
+      <!-- Phone number input added -->
+      <label for="phone">Phone Number (2547...):</label>
+      <input type="tel" id="phone" placeholder="e.g., 254712345678">
+      
       <p><strong>Amount:</strong> KSh 20</p>
-      <p><strong>How to pay:</strong></p>
-      <ol>
-        <li>Go to M-PESA → Lipa na M-PESA</li>
-        <li>Select “Send Money”</li>
-        <li>Enter number: <b>0700 123 456</b></li>
-        <li>Enter amount: <b>KSh 20</b></li>
-        <li>Confirm and send</li>
-      </ol>
+      <!-- Manual M-Pesa instructions removed -->
     </div>
 
-    <button onclick="confirmPayment()">I Have Paid</button>
-    <p id="msg" style="margin-top:15px;color:green;"></p>
+    <!-- Button updated with a unique ID for JavaScript access -->
+    <button id="payBtn">Pay Now (STK Push)</button>
+    <!-- Status elements added -->
+    <p id="status" style="margin-top:15px; font-weight: bold;"></p>
   </div>
 
   <script>
-    function confirmPayment() {
-      document.getElementById("msg").innerText = "Thank you! Your payment will be verified shortly.";
-      // later you can redirect or unlock Wi-Fi here
+    // Define elements for easy access in JS
+    const payBtn = document.getElementById('payBtn');
+    const statusEl = document.getElementById('status');
+    const phoneInput = document.getElementById('phone');
+
+    // Helper function to display messages
+    function show(msg, error = false) {
+      statusEl.textContent = msg;
+      // Using CSS styles defined in the HTML for color coding
+      statusEl.style.color = error ? '#ff0000' : '#007bff'; 
     }
+
+    // Add event listener to the new button ID
+    payBtn.addEventListener('click', async () => {
+      const phone = phoneInput.value.trim();
+      const amount = 20; // Hardcoded amount
+
+      // Client-side phone number validation
+      if (!/^(?:2547|07)\d{8}$/.test(phone)) {
+        show('Enter a valid phone number (2547XXXXXXXX)', true);
+        return;
+      }
+
+      // Normalize phone number to 254 format if user enters 07
+      const normalizedPhone = phone.startsWith('07') ? '254' + phone.slice(1) : phone;
+
+      show('Sending STK Push... please wait.');
+      payBtn.disabled = true; // Disable button while processing
+
+      // *** IMPORTANT: This URL points to your deployed Supabase function ***
+      const SUPABASE_FUNCTION_URL = 'mbfbdehzvbxzktrxauuu.supabase.co';
+
+      try {
+        const response = await fetch(SUPABASE_FUNCTION_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: normalizedPhone,
+            amount: amount,
+          })
+        });
+
+        const data = await response.json();
+        // Check for success condition based on the response status
+        if (!response.ok) {
+            throw new Error(data.errorMessage || data.message || 'Payment initiation failed.');
+        }
+
+        show('STK Push sent! Check your phone and enter your M-Pesa PIN.');
+        // Note: Actual Wi-Fi unlock logic happens when Lipana sends a webhook to your other function
+
+      } catch (err) {
+        show(err.message || 'An error occurred', true);
+      } finally {
+        // Re-enable button after request is done
+        payBtn.disabled = false;
+      }
+    });
   </script>
 </body>
 </html>
