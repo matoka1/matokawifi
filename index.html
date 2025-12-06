@@ -1,266 +1,1211 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Matoka WiFi - Connect</title>
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(to bottom right, #007bff, #00c6ff);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      color: white;
-      margin: 0;
-      padding: 20px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matoka WiFi | High-Speed Internet Access</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --border-radius: 12px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-    .card {
-      background: white;
-      color: #333;
-      border-radius: 15px;
-      padding: 30px;
-      width: 350px;
-      text-align: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    h1 {
-      color: #007bff;
-      margin-bottom: 5px;
-    }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
 
-    .subtitle {
-      color: #666;
-      margin-bottom: 25px;
-    }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-    .wifi-details {
-      background: #f5f5f5;
-      border-radius: 10px;
-      padding: 20px;
-      margin: 20px 0;
-      text-align: left;
-    }
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
 
-    .wifi-item {
-      margin: 15px 0;
-      padding: 10px;
-      background: white;
-      border-radius: 8px;
-      border-left: 4px solid #007bff;
-    }
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
 
-    .label {
-      font-weight: bold;
-      color: #555;
-      font-size: 14px;
-    }
+        .logo-icon {
+            font-size: 2.5rem;
+            background: white;
+            color: var(--primary);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+        }
 
-    .value {
-      font-size: 18px;
-      font-weight: bold;
-      color: #007bff;
-      margin-top: 5px;
-      word-break: break-all;
-    }
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
 
-    .copy-btn {
-      background: #007bff;
-      color: white;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-      margin-top: 5px;
-      transition: 0.3s;
-    }
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+            max-width: 600px;
+            margin: 0 auto;
+        }
 
-    .copy-btn:hover {
-      background: #0056b3;
-    }
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
 
-    .instructions {
-      background: #fff8e1;
-      border-radius: 10px;
-      padding: 15px;
-      margin: 20px 0;
-      text-align: left;
-      border-left: 4px solid #ffc107;
-    }
+        @media (max-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
 
-    .instructions ol {
-      margin: 10px 0;
-      padding-left: 20px;
-    }
+        /* Payment Card */
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            height: 100%;
+        }
 
-    .instructions li {
-      margin: 8px 0;
-    }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        }
 
-    .timer {
-      font-size: 14px;
-      color: #666;
-      margin-top: 10px;
-    }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--light-gray);
+        }
 
-    .success-icon {
-      font-size: 50px;
-      color: #4CAF50;
-      margin-bottom: 15px;
-    }
-  </style>
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        /* Plan Selection */
+        .plans {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .plans {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .plan {
+            border: 2px solid var(--light-gray);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .plan:hover {
+            border-color: var(--primary);
+            background: #f8f9ff;
+        }
+
+        .plan.active {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, #f8f9ff, #eef1ff);
+            transform: scale(1.05);
+        }
+
+        .plan-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: var(--secondary);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .plan-duration {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .plan-price {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .plan-price span {
+            font-size: 1rem;
+            color: var(--gray);
+        }
+
+        .plan-speed {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .plan-features {
+            list-style: none;
+            text-align: left;
+            margin-top: 15px;
+        }
+
+        .plan-features li {
+            padding: 5px 0;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .plan-features li i {
+            color: var(--success);
+            margin-right: 8px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 2px solid var(--light-gray);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        /* Payment Summary */
+        .payment-summary {
+            background: var(--light-gray);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .summary-row.total {
+            border-top: 2px solid var(--dark);
+            font-weight: 700;
+            font-size: 1.2rem;
+            padding-top: 15px;
+            margin-top: 5px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px 30px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark), #5a08a0);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--light-gray);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            background: #f8f9ff;
+        }
+
+        /* Status Display */
+        .status-container {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            background: #f8f9ff;
+            display: none;
+        }
+
+        .status-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .status-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin: 0 auto 20px;
+        }
+
+        .status-icon.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-icon.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-icon.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-message {
+            text-align: center;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        /* Stats Card */
+        .stats-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+        }
+
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .stats-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: var(--light-gray);
+            border-radius: var(--border-radius);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        /* How It Works */
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 10%;
+            right: 10%;
+            height: 3px;
+            background: var(--light-gray);
+            z-index: 1;
+        }
+
+        .step {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border: 3px solid var(--light-gray);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--gray);
+            margin: 0 auto 15px;
+            transition: var(--transition);
+        }
+
+        .step.active .step-number {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .step-desc {
+            font-size: 0.9rem;
+            color: var(--gray);
+            max-width: 200px;
+            margin: 0 auto;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            padding-top: 40px;
+            font-size: 0.9rem;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 15px;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            opacity: 0.8;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 15px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .logo-text {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .steps {
+                flex-direction: column;
+                gap: 30px;
+            }
+            
+            .steps::before {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="card">
-    <div class="success-icon">✓</div>
-    <h1>Payment Successful!</h1>
-    <p class="subtitle">Your WiFi access is ready</p>
-    
-    <div class="wifi-details">
-      <div class="wifi-item">
-        <div class="label">WiFi Network (SSID)</div>
-        <div class="value" id="ssid">Matoka-WiFi</div>
-        <button class="copy-btn" onclick="copyToClipboard('ssid')">Copy</button>
-      </div>
-      
-      <div class="wifi-item">
-        <div class="label">Password</div>
-        <div class="value" id="password">Loading...</div>
-        <button class="copy-btn" onclick="copyToClipboard('password')">Copy</button>
-      </div>
-      
-      <div class="wifi-item">
-        <div class="label">Voucher Code</div>
-        <div class="value" id="voucherCode">Loading...</div>
-        <button class="copy-btn" onclick="copyToClipboard('voucherCode')">Copy</button>
-      </div>
-    </div>
-    
-    <div class="instructions">
-      <strong>How to Connect:</strong>
-      <ol>
-        <li>Go to WiFi settings on your device</li>
-        <li>Select "<span id="ssid-text">Matoka-WiFi</span>"</li>
-        <li>Enter the password above</li>
-        <li>If prompted, enter voucher code</li>
-        <li>Enjoy fast internet!</li>
-      </ol>
-    </div>
-    
-    <div class="timer" id="timer">
-      Access valid for: <span id="time-remaining">24:00:00</span>
-    </div>
-    
-    <div style="margin-top: 20px; font-size: 12px; color: #888;">
-      Need help? Contact support: 0700 000 000
-    </div>
-  </div>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-wifi"></i>
+                </div>
+                <div class="logo-text">Matoka WiFi</div>
+            </div>
+            <p class="tagline">Experience lightning-fast internet with seamless M-Pesa payments. Get connected in seconds!</p>
+        </header>
 
-  <script>
-    // Get voucher code from URL or generate
-    const urlParams = new URLSearchParams(window.location.search);
-    const voucherCode = urlParams.get('voucher') || generateVoucherCode();
-    const password = generatePassword();
-    
-    // Display credentials
-    document.getElementById('voucherCode').textContent = voucherCode;
-    document.getElementById('password').textContent = password;
-    document.getElementById('ssid-text').textContent = 'Matoka-WiFi';
-    
-    // Timer countdown (24 hours)
-    let hours = 24;
-    let minutes = 0;
-    let seconds = 0;
-    
-    function updateTimer() {
-      const timerElement = document.getElementById('time-remaining');
-      timerElement.textContent = 
-        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-      
-      if (seconds === 0) {
-        if (minutes === 0) {
-          if (hours === 0) {
-            clearInterval(timerInterval);
-            document.querySelector('.success-icon').textContent = '⏰';
-            document.querySelector('.success-icon').style.color = '#ff9800';
-            document.getElementById('timer').innerHTML = 'Access expired!';
-            return;
-          }
-          hours--;
-          minutes = 59;
-        } else {
-          minutes--;
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Payment Section -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h2 class="card-title">Get Connected Now</h2>
+                </div>
+
+                <!-- Plan Selection -->
+                <div class="form-group">
+                    <label class="form-label">Select Internet Plan</label>
+                    <div class="plans">
+                        <div class="plan active" data-plan="30" data-amount="20">
+                            <div class="plan-duration">30 MIN</div>
+                            <div class="plan-price">KSh <span>20</span></div>
+                            <div class="plan-speed">Fast Speed • 10 Mbps</div>
+                            <ul class="plan-features">
+                                <li><i class="fas fa-check"></i> Social Media</li>
+                                <li><i class="fas fa-check"></i> Web Browsing</li>
+                                <li><i class="fas fa-check"></i> Email Access</li>
+                            </ul>
+                        </div>
+                        <div class="plan" data-plan="60" data-amount="50">
+                            <div class="plan-badge">POPULAR</div>
+                            <div class="plan-duration">60 MIN</div>
+                            <div class="plan-price">KSh <span>50</span></div>
+                            <div class="plan-speed">High Speed • 25 Mbps</div>
+                            <ul class="plan-features">
+                                <li><i class="fas fa-check"></i> Video Streaming</li>
+                                <li><i class="fas fa-check"></i> Downloads</li>
+                                <li><i class="fas fa-check"></i> Online Gaming</li>
+                            </ul>
+                        </div>
+                        <div class="plan" data-plan="360" data-amount="200">
+                            <div class="plan-duration">6 HOURS</div>
+                            <div class="plan-price">KSh <span>200</span></div>
+                            <div class="plan-speed">Ultra Speed • 50 Mbps</div>
+                            <ul class="plan-features">
+                                <li><i class="fas fa-check"></i> 4K Streaming</li>
+                                <li><i class="fas fa-check"></i> Large Downloads</li>
+                                <li><i class="fas fa-check"></i> Multiple Devices</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phone Input -->
+                <div class="form-group">
+                    <label class="form-label">Enter Your Phone Number</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-phone input-icon"></i>
+                        <input type="tel" id="phone" class="form-control" placeholder="2547XXXXXXXX" maxlength="12">
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--gray); margin-top: 8px;">
+                        Format: 2547XXXXXXXX or 07XXXXXXXX
+                    </div>
+                </div>
+
+                <!-- Payment Summary -->
+                <div class="payment-summary">
+                    <div class="summary-row">
+                        <span>Selected Plan:</span>
+                        <span id="selected-plan">30 Minutes</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Connection Speed:</span>
+                        <span id="connection-speed">10 Mbps</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Amount:</span>
+                        <span id="amount-display">KSh 20</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total to Pay:</span>
+                        <span id="total-amount">KSh 20</span>
+                    </div>
+                </div>
+
+                <!-- Pay Button -->
+                <button id="payBtn" class="btn btn-primary">
+                    <i class="fas fa-lock"></i>
+                    <span>Pay with M-Pesa</span>
+                </button>
+
+                <!-- Status Display -->
+                <div id="statusContainer" class="status-container">
+                    <div id="statusIcon" class="status-icon"></div>
+                    <div id="statusMessage" class="status-message"></div>
+                    <div id="statusDetails" style="text-align: center; color: var(--gray); font-size: 0.9rem;"></div>
+                </div>
+
+                <!-- How It Works -->
+                <div style="margin-top: 30px;">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 20px; color: var(--dark);">How It Works</h3>
+                    <div class="steps">
+                        <div class="step active">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Select Plan</div>
+                            <div class="step-desc">Choose your preferred internet plan</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-title">Enter Phone</div>
+                            <div class="step-desc">Provide your M-Pesa phone number</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-title">Confirm Payment</div>
+                            <div class="step-desc">Enter PIN on your phone prompt</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <div class="step-title">Connect</div>
+                            <div class="step-desc">Get WiFi credentials instantly</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats & Info Section -->
+            <div class="stats-card">
+                <div class="stats-header">
+                    <h2 class="stats-title">Live Statistics</h2>
+                    <div style="color: var(--success); font-size: 0.9rem;">
+                        <i class="fas fa-circle"></i> System Active
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="users-online">147</div>
+                        <div class="stat-label">Users Online Now</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="today-payments">89</div>
+                        <div class="stat-label">Payments Today</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">98%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">24/7</div>
+                        <div class="stat-label">Support Available</div>
+                    </div>
+                </div>
+
+                <!-- Connection Speed Chart -->
+                <div style="margin-top: 30px;">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 15px; color: var(--dark);">Network Performance</h3>
+                    <canvas id="speedChart" height="150"></canvas>
+                </div>
+
+                <!-- WiFi Credentials (Initially Hidden) -->
+                <div id="wifiCredentials" style="display: none; margin-top: 30px; animation: fadeIn 0.5s ease;">
+                    <div style="background: linear-gradient(135deg, #f8f9ff, #eef1ff); padding: 25px; border-radius: var(--border-radius);">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                            <div style="width: 50px; height: 50px; background: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                                <i class="fas fa-wifi"></i>
+                            </div>
+                            <div>
+                                <h3 style="font-size: 1.3rem; font-weight: 600; color: var(--dark);">Connection Ready!</h3>
+                                <p style="color: var(--gray); font-size: 0.95rem;">Your WiFi access has been activated</p>
+                            </div>
+                        </div>
+                        
+                        <div style="background: white; border-radius: var(--border-radius); padding: 20px; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <div>
+                                    <div style="font-size: 0.9rem; color: var(--gray);">Network Name (SSID)</div>
+                                    <div id="wifiSsid" style="font-size: 1.3rem; font-weight: 600; color: var(--dark);">Matoka-WiFi</div>
+                                </div>
+                                <button id="copySsid" class="btn-secondary" style="padding: 8px 15px; font-size: 0.9rem; width: auto;">
+                                    <i class="far fa-copy"></i> Copy
+                                </button>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-size: 0.9rem; color: var(--gray);">Password</div>
+                                    <div id="wifiPassword" style="font-size: 1.3rem; font-weight: 600; color: var(--dark);">Loading...</div>
+                                </div>
+                                <button id="copyPassword" class="btn-secondary" style="padding: 8px 15px; font-size: 0.9rem; width: auto;">
+                                    <i class="far fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 10px; color: var(--gray); font-size: 0.9rem;">
+                            <i class="fas fa-clock"></i>
+                            <span>Access expires in: <span id="expiryTimer" style="font-weight: 600; color: var(--primary);">24:00:00</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Support Info -->
+                <div style="margin-top: 30px; padding: 20px; background: var(--light-gray); border-radius: var(--border-radius);">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <div style="color: var(--primary); font-size: 1.5rem;">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; color: var(--dark);">Need Help?</div>
+                            <div style="color: var(--gray); font-size: 0.95rem;">Our support team is here 24/7</div>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <a href="tel:+254700000000" style="display: flex; align-items: center; gap: 10px; color: var(--primary); text-decoration: none; font-weight: 500;">
+                            <i class="fas fa-phone"></i> 0700 000 000
+                        </a>
+                        <a href="mailto:support@matokawifi.com" style="display: flex; align-items: center; gap: 10px; color: var(--primary); text-decoration: none; font-weight: 500;">
+                            <i class="fas fa-envelope"></i> Email Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>© 2024 Matoka WiFi. All rights reserved. | Fast, Reliable, Secure Internet Access</p>
+            <div class="footer-links">
+                <a href="#"><i class="fas fa-shield-alt"></i> Privacy Policy</a>
+                <a href="#"><i class="fas fa-file-contract"></i> Terms of Service</a>
+                <a href="#"><i class="fas fa-question-circle"></i> FAQ</a>
+                <a href="#"><i class="fas fa-map-marker-alt"></i> Coverage Map</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            SUPABASE_FUNCTION_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/stk-push',
+            SUPABASE_TOKEN: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iZmJkZWh6dmJ4emt0cnhhdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjczMzQsImV4cCI6MjA4MDYwMzMzNH0.R90SdMa_lv-24qmzIcvKcm_qJMbH2nU8pGhej99T7Q0',
+            PLANS: {
+                '30': { amount: 20, speed: '10 Mbps', description: '30 Minutes' },
+                '60': { amount: 50, speed: '25 Mbps', description: '60 Minutes' },
+                '360': { amount: 200, speed: '50 Mbps', description: '6 Hours' }
+            }
+        };
+
+        // DOM Elements
+        const elements = {
+            phone: document.getElementById('phone'),
+            payBtn: document.getElementById('payBtn'),
+            statusContainer: document.getElementById('statusContainer'),
+            statusIcon: document.getElementById('statusIcon'),
+            statusMessage: document.getElementById('statusMessage'),
+            statusDetails: document.getElementById('statusDetails'),
+            selectedPlan: document.getElementById('selected-plan'),
+            connectionSpeed: document.getElementById('connection-speed'),
+            amountDisplay: document.getElementById('amount-display'),
+            totalAmount: document.getElementById('total-amount'),
+            wifiCredentials: document.getElementById('wifiCredentials'),
+            wifiSsid: document.getElementById('wifiSsid'),
+            wifiPassword: document.getElementById('wifiPassword'),
+            expiryTimer: document.getElementById('expiryTimer'),
+            usersOnline: document.getElementById('users-online'),
+            todayPayments: document.getElementById('today-payments')
+        };
+
+        // State
+        let state = {
+            selectedPlan: '30',
+            amount: 20,
+            paymentInProgress: false,
+            expiryTime: 24 * 60 * 60, // 24 hours in seconds
+            timerInterval: null
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePlans();
+            initializeChart();
+            updateLiveStats();
+            setupEventListeners();
+            
+            // Simulate live stats updates
+            setInterval(updateLiveStats, 30000);
+        });
+
+        // Plan Selection
+        function initializePlans() {
+            const plans = document.querySelectorAll('.plan');
+            plans.forEach(plan => {
+                plan.addEventListener('click', function() {
+                    // Remove active class from all plans
+                    plans.forEach(p => p.classList.remove('active'));
+                    
+                    // Add active class to clicked plan
+                    this.classList.add('active');
+                    
+                    // Update state
+                    state.selectedPlan = this.dataset.plan;
+                    state.amount = parseInt(this.dataset.amount);
+                    
+                    // Update UI
+                    updatePaymentSummary();
+                    
+                    // Update steps
+                    updateSteps(1);
+                });
+            });
         }
-        seconds = 59;
-      } else {
-        seconds--;
-      }
-    }
-    
-    const timerInterval = setInterval(updateTimer, 1000);
-    
-    // Copy to clipboard function
-    function copyToClipboard(elementId) {
-      const text = document.getElementById(elementId).textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        const btn = event.target;
-        const originalText = btn.textContent;
-        btn.textContent = 'Copied!';
-        btn.style.background = '#4CAF50';
-        
-        setTimeout(() => {
-          btn.textContent = originalText;
-          btn.style.background = '#007bff';
-        }, 2000);
-      });
-    }
-    
-    // Generate random voucher code (for demo)
-    function generateVoucherCode() {
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let code = '';
-      for (let i = 0; i < 8; i++) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return code;
-    }
-    
-    // Generate random password (for demo)
-    function generatePassword() {
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-      let password = '';
-      for (let i = 0; i < 12; i++) {
-        password += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return password;
-    }
-    
-    // In real implementation, fetch from Supabase based on transaction ID
-    async function fetchVoucherDetails() {
-      const transactionId = urlParams.get('transaction');
-      if (transactionId) {
-        try {
-          const response = await fetch(`https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/get-voucher?transaction=${transactionId}`);
-          const data = await response.json();
-          
-          if (data.success) {
-            document.getElementById('voucherCode').textContent = data.voucher_code;
-            document.getElementById('password').textContent = data.password;
-          }
-        } catch (error) {
-          console.error('Error fetching voucher:', error);
+
+        function updatePaymentSummary() {
+            const plan = CONFIG.PLANS[state.selectedPlan];
+            elements.selectedPlan.textContent = plan.description;
+            elements.connectionSpeed.textContent = plan.speed;
+            elements.amountDisplay.textContent = `KSh ${state.amount}`;
+            elements.totalAmount.textContent = `KSh ${state.amount}`;
         }
-      }
-    }
-    
-    // Uncomment in production
-    // fetchVoucherDetails();
-  </script>
+
+        // Steps Progress
+        function updateSteps(stepNumber) {
+            const steps = document.querySelectorAll('.step');
+            steps.forEach((step, index) => {
+                if (index < stepNumber) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+        }
+
+        // Payment Processing
+        function setupEventListeners() {
+            elements.payBtn.addEventListener('click', processPayment);
+            
+            // Phone input validation
+            elements.phone.addEventListener('input', function(e) {
+                const phone = e.target.value.trim();
+                const isValid = validatePhoneNumber(phone);
+                updateSteps(isValid ? 2 : 1);
+            });
+            
+            // Copy buttons
+            document.getElementById('copySsid')?.addEventListener('click', () => copyToClipboard(elements.wifiSsid.textContent, 'copySsid'));
+            document.getElementById('copyPassword')?.addEventListener('click', () => copyToClipboard(elements.wifiPassword.textContent, 'copyPassword'));
+        }
+
+        function validatePhoneNumber(phone) {
+            return /^(?:2547|07)\d{8}$/.test(phone);
+        }
+
+        function normalizePhone(phone) {
+            return phone.startsWith('07') ? '254' + phone.slice(1) : phone;
+        }
+
+        async function processPayment() {
+            if (state.paymentInProgress) return;
+            
+            const phone = elements.phone.value.trim();
+            
+            // Validation
+            if (!validatePhoneNumber(phone)) {
+                showStatus('error', 'Invalid Phone Number', 'Please enter a valid phone number (2547XXXXXXXX or 07XXXXXXXX)');
+                return;
+            }
+            
+            // Update UI
+            state.paymentInProgress = true;
+            elements.payBtn.disabled = true;
+            elements.payBtn.innerHTML = '<div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div> Processing...';
+            updateSteps(3);
+            
+            const normalizedPhone = normalizePhone(phone);
+            
+            try {
+                // Make API call
+                const response = await fetch(CONFIG.SUPABASE_FUNCTION_URL, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${CONFIG.SUPABASE_TOKEN}`
+                    },
+                    body: JSON.stringify({
+                        phone: normalizedPhone,
+                        amount: state.amount,
+                        plan: state.selectedPlan
+                    })
+                });
+                
+                // Parse response
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Invalid server response');
+                }
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || data.message || 'Payment failed');
+                }
+                
+                // Success
+                showStatus('success', 'STK Push Sent!', 'Check your phone and enter your M-Pesa PIN to complete payment');
+                
+                // Update steps
+                updateSteps(4);
+                
+                // Simulate payment confirmation and show WiFi credentials
+                setTimeout(() => {
+                    showWiFiCredentials();
+                    startExpiryTimer();
+                }, 5000);
+                
+                // Update stats
+                updateLiveStats(true);
+                
+            } catch (error) {
+                console.error('Payment error:', error);
+                showStatus('error', 'Payment Failed', error.message || 'Please try again or contact support');
+                updateSteps(2);
+            } finally {
+                // Reset UI
+                state.paymentInProgress = false;
+                elements.payBtn.disabled = false;
+                elements.payBtn.innerHTML = '<i class="fas fa-lock"></i><span>Pay with M-Pesa</span>';
+            }
+        }
+
+        function showStatus(type, title, message) {
+            // Reset status icon
+            elements.statusIcon.className = 'status-icon';
+            elements.statusIcon.classList.add(type);
+            
+            // Set icon based on type
+            if (type === 'success') {
+                elements.statusIcon.innerHTML = '<i class="fas fa-check"></i>';
+            } else if (type === 'error') {
+                elements.statusIcon.innerHTML = '<i class="fas fa-times"></i>';
+            } else if (type === 'warning') {
+                elements.statusIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+            }
+            
+            // Set messages
+            elements.statusMessage.textContent = title;
+            elements.statusDetails.textContent = message;
+            
+            // Show container
+            elements.statusContainer.classList.add('active');
+            
+            // Auto-hide success messages after 10 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    elements.statusContainer.classList.remove('active');
+                }, 10000);
+            }
+        }
+
+        function showWiFiCredentials() {
+            // Generate random credentials
+            const password = generatePassword();
+            elements.wifiPassword.textContent = password;
+            
+            // Show credentials section
+            elements.wifiCredentials.style.display = 'block';
+            
+            // Hide status
+            elements.statusContainer.classList.remove('active');
+            
+            // Scroll to credentials
+            elements.wifiCredentials.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function generatePassword() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+            let password = '';
+            for (let i = 0; i < 12; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return password;
+        }
+
+        function startExpiryTimer() {
+            if (state.timerInterval) clearInterval(state.timerInterval);
+            
+            state.timerInterval = setInterval(() => {
+                if (state.expiryTime <= 0) {
+                    clearInterval(state.timerInterval);
+                    elements.expiryTimer.textContent = 'EXPIRED';
+                    elements.expiryTimer.style.color = 'var(--danger)';
+                    return;
+                }
+                
+                state.expiryTime--;
+                
+                const hours = Math.floor(state.expiryTime / 3600);
+                const minutes = Math.floor((state.expiryTime % 3600) / 60);
+                const seconds = state.expiryTime % 60;
+                
+                elements.expiryTimer.textContent = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                // Color warning when less than 1 hour
+                if (hours === 0) {
+                    elements.expiryTimer.style.color = 'var(--danger)';
+                }
+            }, 1000);
+        }
+
+        function copyToClipboard(text, buttonId) {
+            navigator.clipboard.writeText(text).then(() => {
+                const button = document.getElementById(buttonId);
+                const originalHtml = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                button.style.background = 'var(--success)';
+                button.style.borderColor = 'var(--success)';
+                button.style.color = 'white';
+                
+                setTimeout(() => {
+                    button.innerHTML = originalHtml;
+                    button.style.background = '';
+                    button.style.borderColor = '';
+                    button.style.color = '';
+                }, 2000);
+            });
+        }
+
+        // Live Stats
+        function updateLiveStats(newPayment = false) {
+            // Simulate live data
+            const onlineChange = Math.floor(Math.random() * 11) - 5; // -5 to +5
+            let currentOnline = parseInt(elements.usersOnline.textContent);
+            currentOnline = Math.max(50, currentOnline + onlineChange);
+            elements.usersOnline.textContent = currentOnline;
+            
+            if (newPayment) {
+                let currentPayments = parseInt(elements.todayPayments.textContent);
+                elements.todayPayments.textContent = currentPayments + 1;
+            }
+        }
+
+        // Chart
+        function initializeChart() {
+            const ctx = document.getElementById('speedChart').getContext('2d');
+            const times = ['12 AM', '3 AM', '6 AM', '9 AM', '12 PM', '3 PM', '6 PM', '9 PM'];
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: times,
+                    datasets: [{
+                        label: 'Download Speed (Mbps)',
+                        data: [25, 30, 45, 60, 75, 80, 65, 40],
+                        borderColor: 'var(--primary)',
+                        backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' Mbps';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update steps based on phone input
+        elements.phone.addEventListener('blur', function() {
+            if (validatePhoneNumber(this.value.trim())) {
+                updateSteps(2);
+            }
+        });
+
+        // Auto-format phone number
+        elements.phone.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.startsWith('254')) {
+                if (value.length > 12) value = value.slice(0, 12);
+            } else if (value.startsWith('07')) {
+                if (value.length > 10) value = value.slice(0, 10);
+                if (value.length >= 2) {
+                    value = value.replace(/^0/, '254');
+                }
+            } else if (value.startsWith('7')) {
+                if (value.length > 9) value = value.slice(0, 9);
+                value = '254' + value;
+            }
+            
+            e.target.value = value;
+        });
+    </script>
 </body>
 </html>
