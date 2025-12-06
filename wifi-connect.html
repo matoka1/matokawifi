@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matoka WiFi - Connect</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to bottom right, #007bff, #00c6ff);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      color: #333;
+      border-radius: 15px;
+      padding: 30px;
+      width: 350px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    h1 {
+      color: #007bff;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 25px;
+    }
+
+    .wifi-details {
+      background: #f5f5f5;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: left;
+    }
+
+    .wifi-item {
+      margin: 15px 0;
+      padding: 10px;
+      background: white;
+      border-radius: 8px;
+      border-left: 4px solid #007bff;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #007bff;
+      margin-top: 5px;
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 5px;
+      transition: 0.3s;
+    }
+
+    .copy-btn:hover {
+      background: #0056b3;
+    }
+
+    .instructions {
+      background: #fff8e1;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 20px 0;
+      text-align: left;
+      border-left: 4px solid #ffc107;
+    }
+
+    .instructions ol {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .instructions li {
+      margin: 8px 0;
+    }
+
+    .timer {
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
+    }
+
+    .success-icon {
+      font-size: 50px;
+      color: #4CAF50;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="success-icon">✓</div>
+    <h1>Payment Successful!</h1>
+    <p class="subtitle">Your WiFi access is ready</p>
+    
+    <div class="wifi-details">
+      <div class="wifi-item">
+        <div class="label">WiFi Network (SSID)</div>
+        <div class="value" id="ssid">Matoka-WiFi</div>
+        <button class="copy-btn" onclick="copyToClipboard('ssid')">Copy</button>
+      </div>
+      
+      <div class="wifi-item">
+        <div class="label">Password</div>
+        <div class="value" id="password">Loading...</div>
+        <button class="copy-btn" onclick="copyToClipboard('password')">Copy</button>
+      </div>
+      
+      <div class="wifi-item">
+        <div class="label">Voucher Code</div>
+        <div class="value" id="voucherCode">Loading...</div>
+        <button class="copy-btn" onclick="copyToClipboard('voucherCode')">Copy</button>
+      </div>
+    </div>
+    
+    <div class="instructions">
+      <strong>How to Connect:</strong>
+      <ol>
+        <li>Go to WiFi settings on your device</li>
+        <li>Select "<span id="ssid-text">Matoka-WiFi</span>"</li>
+        <li>Enter the password above</li>
+        <li>If prompted, enter voucher code</li>
+        <li>Enjoy fast internet!</li>
+      </ol>
+    </div>
+    
+    <div class="timer" id="timer">
+      Access valid for: <span id="time-remaining">24:00:00</span>
+    </div>
+    
+    <div style="margin-top: 20px; font-size: 12px; color: #888;">
+      Need help? Contact support: 0700 000 000
+    </div>
+  </div>
+
+  <script>
+    // Get voucher code from URL or generate
+    const urlParams = new URLSearchParams(window.location.search);
+    const voucherCode = urlParams.get('voucher') || generateVoucherCode();
+    const password = generatePassword();
+    
+    // Display credentials
+    document.getElementById('voucherCode').textContent = voucherCode;
+    document.getElementById('password').textContent = password;
+    document.getElementById('ssid-text').textContent = 'Matoka-WiFi';
+    
+    // Timer countdown (24 hours)
+    let hours = 24;
+    let minutes = 0;
+    let seconds = 0;
+    
+    function updateTimer() {
+      const timerElement = document.getElementById('time-remaining');
+      timerElement.textContent = 
+        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      
+      if (seconds === 0) {
+        if (minutes === 0) {
+          if (hours === 0) {
+            clearInterval(timerInterval);
+            document.querySelector('.success-icon').textContent = '⏰';
+            document.querySelector('.success-icon').style.color = '#ff9800';
+            document.getElementById('timer').innerHTML = 'Access expired!';
+            return;
+          }
+          hours--;
+          minutes = 59;
+        } else {
+          minutes--;
+        }
+        seconds = 59;
+      } else {
+        seconds--;
+      }
+    }
+    
+    const timerInterval = setInterval(updateTimer, 1000);
+    
+    // Copy to clipboard function
+    function copyToClipboard(elementId) {
+      const text = document.getElementById(elementId).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.style.background = '#4CAF50';
+        
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = '#007bff';
+        }, 2000);
+      });
+    }
+    
+    // Generate random voucher code (for demo)
+    function generateVoucherCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let code = '';
+      for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    }
+    
+    // Generate random password (for demo)
+    function generatePassword() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+      let password = '';
+      for (let i = 0; i < 12; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return password;
+    }
+    
+    // In real implementation, fetch from Supabase based on transaction ID
+    async function fetchVoucherDetails() {
+      const transactionId = urlParams.get('transaction');
+      if (transactionId) {
+        try {
+          const response = await fetch(`https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/get-voucher?transaction=${transactionId}`);
+          const data = await response.json();
+          
+          if (data.success) {
+            document.getElementById('voucherCode').textContent = data.voucher_code;
+            document.getElementById('password').textContent = data.password;
+          }
+        } catch (error) {
+          console.error('Error fetching voucher:', error);
+        }
+      }
+    }
+    
+    // Uncomment in production
+    // fetchVoucherDetails();
+  </script>
+</body>
+</html>
