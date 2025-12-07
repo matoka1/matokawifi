@@ -574,130 +574,139 @@
     }
 
     // Payment Flow with STK Push
-    async function initiatePayment() {
-        if (state.paymentInProgress) {
-            return;
-        }
+ async function initiatePayment() {
+    if (state.paymentInProgress) {
+        return;
+    }
+    
+    const phone = document.getElementById('phone').value.trim();
+    
+    // Validate phone
+    if (!validatePhoneNumber(phone)) {
+        showStatus('error', 'Invalid Phone Number', 'Please enter a valid phone number (2547XXXXXXXX or 07XXXXXXXX)');
+        return;
+    }
+    
+    // Update state
+    state.paymentInProgress = true;
+    state.phone = phone;
+    
+    const payBtn = document.getElementById('payBtn');
+    payBtn.disabled = true;
+    payBtn.innerHTML = '<div class="spinner"></div> Sending STK Push...';
+    
+    const normalizedPhone = normalizePhone(phone);
+    
+    try {
+        // Show step 3
+        state.currentStep = 3;
+        showStep(3);
+        updateProgressBar();
         
-        const phone = document.getElementById('phone').value.trim();
+        // Show initial status
+        showStatus('processing', 'Sending STK Push...', 'Please wait while we send payment request to your phone');
         
-        // Validate phone
-        if (!validatePhoneNumber(phone)) {
-            showStatus('error', 'Invalid Phone Number', 'Please enter a valid phone number (2547XXXXXXXX or 07XXXXXXXX)');
-            return;
-        }
+        console.log('📤 Sending STK Push request:', {
+            phone: normalizedPhone,
+            amount: state.amount,
+            plan: state.selectedPlan
+        });
         
-        // Update state
-        state.paymentInProgress = true;
-        state.phone = phone;
-        
-        const payBtn = document.getElementById('payBtn');
-        payBtn.disabled = true;
-        payBtn.innerHTML = '<div class="spinner"></div> Sending STK Push...';
-        
-        const normalizedPhone = normalizePhone(phone);
-        
-        try {
-            // Show step 3
-            state.currentStep = 3;
-            showStep(3);
-            updateProgressBar();
-            
-            // Show initial status
-            showStatus('processing', 'Sending STK Push...', 'Please wait while we send payment request to your phone');
-            
-            console.log('📤 Sending STK Push request:', {
+        // Make API call to initiate STK Push
+        const response = await fetch(CONFIG.SUPABASE_FUNCTION_URL, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({
                 phone: normalizedPhone,
                 amount: state.amount,
                 plan: state.selectedPlan
-            });
-            
-            // Make API call to initiate STK Push
-            const response = await fetch(CONFIG.SUPABASE_FUNCTION_URL, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-                },
-                body: JSON.stringify({
-                    phone: normalizedPhone,
-                    amount: state.amount,
-                    plan: state.selectedPlan
-                })
-            });
-            
-            console.log('📥 STK Push response status:', response.status);
-            
-            // Get response text first
-            const responseText = await response.text();
-            console.log('📥 STK Push response text:', responseText);
-            
-            let data;
-            try {
-                data = JSON.parse(responseText);
-                console.log('📊 STK Push parsed data:', data);
-            } catch (parseError) {
-                console.error('❌ Failed to parse JSON:', parseError);
-                throw new Error('Invalid response from payment server');
-            }
-            
-            if (!response.ok) {
-                console.error('❌ STK Push API error:', data);
-                throw new Error(data.error || data.message || data.errorMessage || 'Payment initiation failed');
-            }
-            
-            // Save transaction ID
-            state.transactionId = data.data?.transactionId || data.transactionId || data.checkoutRequestID || `TXN_${Date.now()}`;
-            console.log('💳 Transaction ID:', state.transactionId);
-            
-            // Store payment in Supabase (pending status)
-            const paymentData = {
-                phone: normalizedPhone,
-                amount: state.amount,
-                plan: state.selectedPlan,
-                transactionId: state.transactionId
-            };
-            
-            await storePaymentInSupabase(paymentData);
-            
-            // Log admin action
-            await logAdminAction('initiate_payment', {
-                phone: normalizedPhone,
-                amount: state.amount,
-                plan: state.selectedPlan,
-                transactionId: state.transactionId
-            });
-            
-            // Update status - IMPROVED MESSAGE
-            showStatus('waiting', 'Check Your Phone', 'Enter your M-PESA PIN when prompted. Payment verification will start in 15 seconds...');
-            
-            // Start checking payment status via webhook
-            startPaymentChecking();
-            
-        } catch (error) {
-            console.error('❌ Payment initiation error:', error);
-            
-            // Show detailed error to user
-            let errorMessage = error.message;
-            if (errorMessage.includes('Failed to fetch')) {
-                errorMessage = 'Network error. Please check your internet connection and try again.';
-            } else if (errorMessage.includes('Invalid response')) {
-                errorMessage = 'Payment service is currently unavailable. Please try again later.';
-            }
-            
-            showStatus('error', 'Payment Failed', errorMessage);
-            
-            // Reset button
-            payBtn.disabled = false;
-            payBtn.innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
-            state.paymentInProgress = false;
-            
-            // Go back to step 2
-            state.currentStep = 2;
-            showStep(2);
-            updateProgressBar();
+            })
+        });
+        
+        console.log('📥 STK Push response status:', response.status);
+        
+        // Get response text first
+        const responseText = await response.text();
+        console.log('📥 STK Push response text:', responseText);
+        
+        let data;
+        try {
+            data = JSON.parse(responseText);
+            console.log('📊 STK Push parsed data:', data);
+        } catch (parseError) {
+            console.error('❌ Failed to parse JSON:', parseError);
+            throw new Error('Invalid response from payment server');
         }
+        
+        if (!response.ok) {
+            console.error('❌ STK Push API error:', data);
+            throw new Error(data.error || data.message || data.errorMessage || 'Payment initiation failed');
+        }
+        
+        // ========== FIXED CODE ==========
+        // Extract transaction ID from nested response
+        const transactionId = data.data?.data?.transactionId || 
+                            data.data?.checkoutRequestID || 
+                            data.checkoutRequestID || 
+                            data.transactionId || 
+                            `TXN_${Date.now()}`;
+        
+        state.transactionId = transactionId;
+        console.log('💳 Extracted Transaction ID:', transactionId);
+        console.log('Full response structure:', JSON.stringify(data, null, 2));
+        // ========== END FIX ==========
+        
+        // Store payment in Supabase (pending status)
+        const paymentData = {
+            phone: normalizedPhone,
+            amount: state.amount,
+            plan: state.selectedPlan,
+            transactionId: state.transactionId
+        };
+        
+        await storePaymentInSupabase(paymentData);
+        
+        // Log admin action
+        await logAdminAction('initiate_payment', {
+            phone: normalizedPhone,
+            amount: state.amount,
+            plan: state.selectedPlan,
+            transactionId: state.transactionId
+        });
+        
+        // Update status - IMPROVED MESSAGE
+        showStatus('waiting', 'Check Your Phone', 'Enter your M-PESA PIN when prompted. Payment verification will start in 15 seconds...');
+        
+        // Start checking payment status via webhook
+        startPaymentChecking();
+        
+    } catch (error) {
+        console.error('❌ Payment initiation error:', error);
+        
+        // Show detailed error to user
+        let errorMessage = error.message;
+        if (errorMessage.includes('Failed to fetch')) {
+            errorMessage = 'Network error. Please check your internet connection and try again.';
+        } else if (errorMessage.includes('Invalid response')) {
+            errorMessage = 'Payment service is currently unavailable. Please try again later.';
+        }
+        
+        showStatus('error', 'Payment Failed', errorMessage);
+        
+        // Reset button
+        payBtn.disabled = false;
+        payBtn.innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
+        state.paymentInProgress = false;
+        
+        // Go back to step 2
+        state.currentStep = 2;
+        showStep(2);
+        updateProgressBar();
     }
+}
 
     // REAL PAYMENT VERIFICATION using webhook - UPDATED VERSION
     async function checkPaymentStatus() {
