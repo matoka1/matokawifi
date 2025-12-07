@@ -256,7 +256,7 @@
         </div>
     </div>
 
-   <script>
+  <script>
     // PORTAL DETECTION
     (function() {
         // Check if accessed via captive portal
@@ -281,8 +281,21 @@
 
     // Configuration
     const CONFIG = {
+        // STK Push API
         SUPABASE_FUNCTION_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/stk-push',
-        SUPABASE_TOKEN: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iZmJkZWh6dmJ4emt0cnhhdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjczMzQsImV4cCI6MjA4MDYwMzMzNH0.R90SdMa_lv-24qmzIcvKcm_qJMbH2nU8pGhej99T7Q0',
+        
+        // Payment Verification Webhook
+        PAYMENT_WEBHOOK_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/payment-webhook',
+        
+        // Supabase Database (Direct REST API)
+        SUPABASE_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co',
+        SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iZmJkZWh6dmJ4emt0cnhhdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjczMzQsImV4cCI6MjA4MDYwMzMzNH0.R90SdMa_lv-24qmzIcvKcm_qJMbH2nU8pGhej99T7Q0',
+        
+        // Supabase Tables
+        TABLES: {
+            PAYMENTS: 'payments',
+            WIFI_SESSIONS: 'wifi_sessions'
+        },
         
         WIFI_SSID: 'Matoka Wifi',
         WIFI_PASSWORD: 'No Password Required',
@@ -293,7 +306,11 @@
             '180': { amount: 50, duration: 180, speed: '30 Mbps', description: '3 Hours' },
             '360': { amount: 100, duration: 360, speed: '40 Mbps', description: '6 Hours' },
             '720': { amount: 200, duration: 720, speed: '50 Mbps', description: '12 Hours' }
-        }
+        },
+        
+        // Payment checking intervals
+        CHECK_INTERVAL: 5000, // 5 seconds
+        MAX_CHECK_TIME: 300000 // 5 minutes
     };
 
     // State
@@ -305,8 +322,8 @@
         transactionId: null,
         paymentInProgress: false,
         checkingPayment: false,
-        pollInterval: null,
-        pollStartTime: null,
+        checkInterval: null,
+        checkStartTime: null,
         expiryTime: 30 * 60,
         timerInterval: null
     };
@@ -418,6 +435,106 @@
         return phone;
     }
 
+    // SUPABASE DATABASE FUNCTIONS
+    async function storePaymentInSupabase(paymentData) {
+        try {
+            const response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.TABLES.PAYMENTS}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': CONFIG.SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify({
+                    phone: paymentData.phone,
+                    amount: paymentData.amount,
+                    plan: paymentData.plan,
+                    transaction_id: paymentData.transactionId,
+                    status: 'pending',
+                    created_at: new Date().toISOString()
+                })
+            });
+            
+            if (response.ok) {
+                console.log('Payment stored in Supabase:', paymentData);
+                return true;
+            } else {
+                console.error('Failed to store payment in Supabase:', await response.text());
+                return false;
+            }
+        } catch (error) {
+            console.error('Supabase storage error:', error);
+            return false;
+        }
+    }
+
+    async function updatePaymentStatus(transactionId, status, mpesaReceipt = null) {
+        try {
+            const response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.TABLES.PAYMENTS}?transaction_id=eq.${transactionId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': CONFIG.SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify({
+                    status: status,
+                    mpesa_receipt: mpesaReceipt,
+                    updated_at: new Date().toISOString(),
+                    completed_at: status === 'completed' ? new Date().toISOString() : null
+                })
+            });
+            
+            if (response.ok) {
+                console.log(`Payment ${transactionId} updated to ${status}`);
+                return true;
+            } else {
+                console.error('Failed to update payment status:', await response.text());
+                return false;
+            }
+        } catch (error) {
+            console.error('Supabase update error:', error);
+            return false;
+        }
+    }
+
+    async function createWiFiSession(paymentData) {
+        try {
+            const response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.TABLES.WIFI_SESSIONS}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': CONFIG.SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify({
+                    phone: paymentData.phone,
+                    transaction_id: paymentData.transactionId,
+                    plan: paymentData.plan,
+                    amount: paymentData.amount,
+                    duration_minutes: CONFIG.PLANS[paymentData.plan].duration,
+                    status: 'active',
+                    created_at: new Date().toISOString(),
+                    expires_at: new Date(Date.now() + (CONFIG.PLANS[paymentData.plan].duration * 60 * 1000)).toISOString()
+                })
+            });
+            
+            if (response.ok) {
+                console.log('WiFi session created in Supabase');
+                return true;
+            } else {
+                console.error('Failed to create WiFi session:', await response.text());
+                return false;
+            }
+        } catch (error) {
+            console.error('Supabase session creation error:', error);
+            return false;
+        }
+    }
+
     // Payment Flow with STK Push
     async function initiatePayment() {
         if (state.paymentInProgress) {
@@ -462,7 +579,7 @@
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${CONFIG.SUPABASE_TOKEN}`
+                    'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
                 },
                 body: JSON.stringify({
                     phone: normalizedPhone,
@@ -492,13 +609,23 @@
             }
             
             // Save transaction ID
-            state.transactionId = data.data?.transactionId || data.transactionId || `TXN_${Date.now()}`;
+            state.transactionId = data.data?.transactionId || data.transactionId || data.checkoutRequestID || `TXN_${Date.now()}`;
             console.log('Transaction ID:', state.transactionId);
+            
+            // Store payment in Supabase (pending status)
+            const paymentData = {
+                phone: normalizedPhone,
+                amount: state.amount,
+                plan: state.selectedPlan,
+                transactionId: state.transactionId
+            };
+            
+            await storePaymentInSupabase(paymentData);
             
             // Update status
             showStatus('waiting', 'Check Your Phone', 'Enter your M-Pesa PIN on the prompt. We\'ll verify payment automatically.');
             
-            // Start checking payment status
+            // Start checking payment status via webhook
             startPaymentChecking();
             
         } catch (error) {
@@ -526,63 +653,119 @@
         }
     }
 
-    // Payment Status Checking
-    function startPaymentChecking() {
-        if (state.checkingPayment) return;
-        
-        state.checkingPayment = true;
-        state.pollStartTime = Date.now();
-        
-        // First check after 15 seconds (give user time to enter PIN)
-        setTimeout(() => {
-            checkPaymentStatus();
-            state.pollInterval = setInterval(checkPaymentStatus, 5000); // Check every 5 seconds
-        }, 15000);
-    }
-
-    function stopPaymentChecking() {
-        if (state.pollInterval) {
-            clearInterval(state.pollInterval);
-            state.pollInterval = null;
-        }
-        state.checkingPayment = false;
-    }
-
+    // REAL PAYMENT VERIFICATION using webhook
     async function checkPaymentStatus() {
-        // Maximum 5 minutes of checking
-        if (Date.now() - state.pollStartTime > 300000) { // 5 minutes
+        // Maximum check time
+        if (Date.now() - state.checkStartTime > CONFIG.MAX_CHECK_TIME) {
             stopPaymentChecking();
             showStatus('error', 'Payment Timeout', 'Payment verification timed out. Please contact support if payment was deducted.');
+            
+            // Update payment status in Supabase
+            await updatePaymentStatus(state.transactionId, 'timeout');
+            
             return;
         }
         
         try {
-            // Simulate checking payment status
-            // In a real implementation, you would call your backend to check payment status
-            const isConfirmed = Math.random() > 0.5; // 50% chance for demo
+            // Check payment status via webhook
+            const response = await fetch(CONFIG.PAYMENT_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+                },
+                body: JSON.stringify({
+                    transactionId: state.transactionId,
+                    phone: state.phone,
+                    amount: state.amount
+                })
+            });
             
-            if (isConfirmed) {
+            console.log('Payment check response status:', response.status);
+            
+            const responseText = await response.text();
+            console.log('Payment check response:', responseText);
+            
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('Failed to parse payment check JSON:', parseError);
+                return; // Continue checking
+            }
+            
+            if (response.ok && data.success === true) {
+                // PAYMENT CONFIRMED!
                 stopPaymentChecking();
                 showStatus('success', 'Payment Verified!', 'Your payment has been confirmed successfully.');
+                
+                // Update payment status in Supabase to completed
+                await updatePaymentStatus(state.transactionId, 'completed', data.mpesaReceipt);
+                
+                // Create WiFi session in Supabase
+                await createWiFiSession({
+                    phone: state.phone,
+                    amount: state.amount,
+                    plan: state.selectedPlan,
+                    transactionId: state.transactionId
+                });
                 
                 // Wait 2 seconds then complete
                 setTimeout(() => {
                     completePayment();
                 }, 2000);
                 
+            } else if (data.success === false) {
+                // Payment failed or cancelled
+                stopPaymentChecking();
+                showStatus('error', 'Payment Failed', data.message || 'Payment was not completed. Please try again.');
+                
+                // Update payment status in Supabase
+                await updatePaymentStatus(state.transactionId, 'failed');
+                
+                // Reset state
+                state.paymentInProgress = false;
+                document.getElementById('payBtn').disabled = false;
+                document.getElementById('payBtn').innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
+                
             } else {
-                const elapsedSeconds = Math.floor((Date.now() - state.pollStartTime) / 1000);
+                // Still processing, show waiting message
+                const elapsedSeconds = Math.floor((Date.now() - state.checkStartTime) / 1000);
                 const elapsedMinutes = Math.floor(elapsedSeconds / 60);
                 const remainingSeconds = elapsedSeconds % 60;
                 
                 showStatus('waiting', 'Waiting for Payment', 
-                    `Checking payment status... (${elapsedMinutes}:${remainingSeconds.toString().padStart(2, '0')})`);
+                    `Checking payment status... (${elapsedMinutes}:${remainingSeconds.toString().padStart(2, '0')})<br>
+                    Transaction: ${state.transactionId ? state.transactionId.substring(0, 12) + '...' : 'Processing...'}`);
             }
             
         } catch (error) {
-            console.error('Status check error:', error);
-            showStatus('error', 'Check Failed', 'Error checking payment status');
+            console.error('Payment check error:', error);
+            // Continue checking on error
+            const elapsedSeconds = Math.floor((Date.now() - state.checkStartTime) / 1000);
+            showStatus('waiting', 'Checking...', `Payment verification in progress (${elapsedSeconds}s)`);
         }
+    }
+
+    function startPaymentChecking() {
+        if (state.checkingPayment) return;
+        
+        state.checkingPayment = true;
+        state.checkStartTime = Date.now();
+        
+        // First check after 10 seconds (give user time to enter PIN)
+        setTimeout(() => {
+            checkPaymentStatus();
+            state.checkInterval = setInterval(checkPaymentStatus, CONFIG.CHECK_INTERVAL);
+        }, 10000);
+    }
+
+    function stopPaymentChecking() {
+        if (state.checkInterval) {
+            clearInterval(state.checkInterval);
+            state.checkInterval = null;
+        }
+        state.checkingPayment = false;
     }
 
     function completePayment() {
@@ -606,7 +789,7 @@
         state.paymentInProgress = false;
         
         // Show success alert with MAC instructions
-        alert(`✅ PAYMENT SUCCESSFUL!\n\n📶 WiFi: ${CONFIG.WIFI_SSID}\n🔒 Security: Open Network\n⏰ Access: ${plan.duration} minutes\n💰 Amount: KSh ${state.amount}\n\n📍 WhatsApp your MAC address to 0790 969 743 to get internet access`);
+        alert(`✅ PAYMENT CONFIRMED!\n\n📶 WiFi: ${CONFIG.WIFI_SSID}\n🔒 Security: Open Network\n⏰ Access: ${plan.duration} minutes\n💰 Amount Paid: KSh ${state.amount}\n📱 Transaction: ${state.transactionId}\n\n📍 WhatsApp your MAC address to 0790 969 743 to get internet access`);
     }
 
     function cancelPayment() {
@@ -621,6 +804,11 @@
         document.getElementById('payBtn').innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
         
         showStatus('info', 'Payment Cancelled', 'You can try again when ready.');
+        
+        // Update payment status in Supabase if transaction exists
+        if (state.transactionId) {
+            updatePaymentStatus(state.transactionId, 'cancelled');
+        }
     }
 
     function restartFlow() {
@@ -632,8 +820,8 @@
             transactionId: null,
             paymentInProgress: false,
             checkingPayment: false,
-            pollInterval: null,
-            pollStartTime: null,
+            checkInterval: null,
+            checkStartTime: null,
             expiryTime: 30 * 60,
             timerInterval: null
         };
@@ -647,6 +835,7 @@
         document.querySelector('.plan-card').classList.add('active');
         
         document.getElementById('statusContainer').innerHTML = '';
+        document.getElementById('statusContainer').classList.remove('active');
     }
 
     // Status Display
