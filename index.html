@@ -310,12 +310,12 @@
             '720': { amount: 200, duration: 720, speed: '50 Mbps', description: '12 Hours' }
         },
         
-        // Payment checking intervals
-        CHECK_INTERVAL: 5000, // 5 seconds
-        MAX_CHECK_TIME: 300000 // 5 minutes
+        // Payment checking intervals - UPDATED
+        CHECK_INTERVAL: 10000, // 10 seconds (after initial delay)
+        MAX_CHECK_TIME: 180000 // 3 minutes (reduced from 5)
     };
 
-    // State
+    // State - UPDATED
     let state = {
         currentStep: 1,
         selectedPlan: '30',
@@ -326,6 +326,7 @@
         checkingPayment: false,
         checkInterval: null,
         checkStartTime: null,
+        checkAttempts: 0, // ADDED: Track check attempts
         expiryTime: 30 * 60,
         timerInterval: null
     };
@@ -667,8 +668,8 @@
                 transactionId: state.transactionId
             });
             
-            // Update status
-            showStatus('waiting', 'Check Your Phone', 'Enter your M-Pesa PIN on the prompt. We\'ll verify payment automatically.');
+            // Update status - IMPROVED MESSAGE
+            showStatus('waiting', 'Check Your Phone', 'Enter your M-PESA PIN when prompted. Payment verification will start in 15 seconds...');
             
             // Start checking payment status via webhook
             startPaymentChecking();
@@ -698,12 +699,12 @@
         }
     }
 
-    // REAL PAYMENT VERIFICATION using webhook
+    // REAL PAYMENT VERIFICATION using webhook - UPDATED VERSION
     async function checkPaymentStatus() {
         // Maximum check time
         if (Date.now() - state.checkStartTime > CONFIG.MAX_CHECK_TIME) {
             stopPaymentChecking();
-            showStatus('error', 'Payment Timeout', 'Payment verification timed out. Please contact support if payment was deducted.');
+            showStatus('error', 'Payment Timeout', 'Payment verification timed out after 3 minutes. Please contact support if payment was deducted.');
             
             // Update payment status in Supabase
             await updatePaymentStatus(state.transactionId, 'timeout');
@@ -712,13 +713,20 @@
             await logAdminAction('payment_timeout', {
                 transactionId: state.transactionId,
                 phone: state.phone,
-                amount: state.amount
+                amount: state.amount,
+                elapsedTime: Math.floor((Date.now() - state.checkStartTime) / 1000)
             });
             
             return;
         }
         
         try {
+            // Determine if this is the first check
+            const isInitialCheck = state.checkAttempts === 0;
+            state.checkAttempts++;
+            
+            console.log(`🔍 Payment check attempt #${state.checkAttempts} ${isInitialCheck ? '(initial check)' : ''}`);
+            
             // Check payment status via webhook
             const response = await fetch(CONFIG.PAYMENT_WEBHOOK_URL, {
                 method: 'POST',
@@ -729,7 +737,9 @@
                 body: JSON.stringify({
                     transactionId: state.transactionId,
                     phone: state.phone,
-                    amount: state.amount
+                    amount: state.amount,
+                    plan: state.selectedPlan,
+                    isInitialCheck: isInitialCheck
                 })
             });
             
@@ -746,66 +756,91 @@
                 return; // Continue checking
             }
             
-            if (response.ok && data.success === true) {
-                // PAYMENT CONFIRMED!
-                stopPaymentChecking();
-                showStatus('success', 'Payment Verified!', 'Your payment has been confirmed successfully.');
-                
-                // Update payment status in Supabase to completed
-                await updatePaymentStatus(state.transactionId, 'completed', data.mpesaReceipt);
-                
-                // Create WiFi session in Supabase
-                await createWiFiSession({
-                    phone: state.phone,
-                    amount: state.amount,
-                    plan: state.selectedPlan,
-                    transactionId: state.transactionId
-                });
-                
-                // Log admin action
-                await logAdminAction('payment_completed', {
-                    transactionId: state.transactionId,
-                    phone: state.phone,
-                    amount: state.amount,
-                    plan: state.selectedPlan,
-                    mpesaReceipt: data.mpesaReceipt
-                });
-                
-                // Wait 2 seconds then complete
-                setTimeout(() => {
-                    completePayment();
-                }, 2000);
-                
-            } else if (data.success === false) {
-                // Payment failed or cancelled
-                stopPaymentChecking();
-                showStatus('error', 'Payment Failed', data.message || 'Payment was not completed. Please try again.');
-                
-                // Update payment status in Supabase
-                await updatePaymentStatus(state.transactionId, 'failed');
-                
-                // Log admin action
-                await logAdminAction('payment_failed', {
-                    transactionId: state.transactionId,
-                    phone: state.phone,
-                    amount: state.amount,
-                    reason: data.message
-                });
-                
-                // Reset state
-                state.paymentInProgress = false;
-                document.getElementById('payBtn').disabled = false;
-                document.getElementById('payBtn').innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
+            if (response.ok) {
+                // Check based on status field from updated webhook
+                if (data.status === 'completed') {
+                    // PAYMENT CONFIRMED!
+                    stopPaymentChecking();
+                    showStatus('success', 'Payment Verified!', 'Your payment has been confirmed successfully.');
+                    
+                    // Update payment status in Supabase to completed
+                    await updatePaymentStatus(state.transactionId, 'completed', data.mpesaReceipt);
+                    
+                    // Create WiFi session in Supabase
+                    await createWiFiSession({
+                        phone: state.phone,
+                        amount: state.amount,
+                        plan: state.selectedPlan,
+                        transactionId: state.transactionId
+                    });
+                    
+                    // Log admin action
+                    await logAdminAction('payment_completed', {
+                        transactionId: state.transactionId,
+                        phone: state.phone,
+                        amount: state.amount,
+                        plan: state.selectedPlan,
+                        mpesaReceipt: data.mpesaReceipt
+                    });
+                    
+                    // Wait 2 seconds then complete
+                    setTimeout(() => {
+                        completePayment();
+                    }, 2000);
+                    
+                    return;
+                    
+                } else if (data.status === 'failed') {
+                    // Payment failed or cancelled
+                    stopPaymentChecking();
+                    showStatus('error', 'Payment Failed', data.message || 'Payment was not completed. Please try again.');
+                    
+                    // Update payment status in Supabase
+                    await updatePaymentStatus(state.transactionId, 'failed');
+                    
+                    // Log admin action
+                    await logAdminAction('payment_failed', {
+                        transactionId: state.transactionId,
+                        phone: state.phone,
+                        amount: state.amount,
+                        reason: data.message
+                    });
+                    
+                    // Reset state
+                    state.paymentInProgress = false;
+                    document.getElementById('payBtn').disabled = false;
+                    document.getElementById('payBtn').innerHTML = '<i class="fas fa-lock"></i><span>Pay Now</span>';
+                    
+                    return;
+                    
+                } else if (data.status === 'pending') {
+                    // Still processing, show waiting message with better UX
+                    const elapsedSeconds = Math.floor((Date.now() - state.checkStartTime) / 1000);
+                    const elapsedMinutes = Math.floor(elapsedSeconds / 60);
+                    const remainingSeconds = elapsedSeconds % 60;
+                    
+                    // Show helpful messages based on elapsed time
+                    let statusMessage;
+                    if (elapsedSeconds < 30) {
+                        statusMessage = `Please complete the payment on your phone.<br>Enter your M-PESA PIN when prompted.<br><small>Time elapsed: ${elapsedSeconds}s</small>`;
+                    } else if (elapsedSeconds < 90) {
+                        statusMessage = `Payment processing... This usually takes 30-60 seconds.<br><small>Time elapsed: ${elapsedSeconds}s</small>`;
+                    } else {
+                        statusMessage = `Still processing. Please wait a bit longer.<br><small>Time elapsed: ${elapsedMinutes}:${remainingSeconds.toString().padStart(2, '0')}</small>`;
+                    }
+                    
+                    showStatus('waiting', 'Waiting for Payment', 
+                        `${statusMessage}<br>
+                        Transaction: ${state.transactionId ? state.transactionId.substring(0, 12) + '...' : 'Processing...'}`);
+                        
+                } else if (data.status === 'not_found') {
+                    // Transaction not found in system - continue checking
+                    console.log('Transaction not found yet, continuing to check...');
+                }
                 
             } else {
-                // Still processing, show waiting message
-                const elapsedSeconds = Math.floor((Date.now() - state.checkStartTime) / 1000);
-                const elapsedMinutes = Math.floor(elapsedSeconds / 60);
-                const remainingSeconds = elapsedSeconds % 60;
-                
-                showStatus('waiting', 'Waiting for Payment', 
-                    `Checking payment status... (${elapsedMinutes}:${remainingSeconds.toString().padStart(2, '0')})<br>
-                    Transaction: ${state.transactionId ? state.transactionId.substring(0, 12) + '...' : 'Processing...'}`);
+                // HTTP error - continue checking
+                console.error('Payment check HTTP error:', response.status, data);
             }
             
         } catch (error) {
@@ -821,20 +856,36 @@
         
         state.checkingPayment = true;
         state.checkStartTime = Date.now();
+        state.checkAttempts = 0;
         
-        // First check after 10 seconds (give user time to enter PIN)
+        console.log(`⏱️ Starting payment check at: ${new Date().toLocaleTimeString()}`);
+        
+        // Updated timing:
+        // 1. First check after 15 seconds (webhook will wait if isInitialCheck=true)
+        // 2. Then check every 10 seconds
+        // 3. Stop after 3 minutes (18 checks total)
+        
+        // Initial check after 15 seconds (gives user time to enter PIN)
         setTimeout(() => {
             checkPaymentStatus();
+            // Subsequent checks every 10 seconds
             state.checkInterval = setInterval(checkPaymentStatus, CONFIG.CHECK_INTERVAL);
-        }, 10000);
+        }, 15000);
+        
+        // Update user message
+        setTimeout(() => {
+            showStatus('waiting', 'Checking Payment', 'Starting payment verification...');
+        }, 15000);
     }
 
     function stopPaymentChecking() {
         if (state.checkInterval) {
             clearInterval(state.checkInterval);
             state.checkInterval = null;
+            console.log('🛑 Stopped payment checking');
         }
         state.checkingPayment = false;
+        state.checkAttempts = 0;
     }
 
     function completePayment() {
@@ -856,6 +907,7 @@
         
         // Reset payment state
         state.paymentInProgress = false;
+        state.checkAttempts = 0;
         
         // Show success alert with MAC instructions
         alert(`✅ PAYMENT CONFIRMED!\n\n📶 WiFi: ${CONFIG.WIFI_SSID}\n🔒 Security: Open Network\n⏰ Access: ${plan.duration} minutes\n💰 Amount Paid: KSh ${state.amount}\n📱 Transaction: ${state.transactionId}\n\n📍 WhatsApp your MAC address to 0790 969 743 to get internet access`);
@@ -864,6 +916,7 @@
     function cancelPayment() {
         stopPaymentChecking();
         state.paymentInProgress = false;
+        state.checkAttempts = 0;
         
         state.currentStep = 2;
         showStep(2);
@@ -888,6 +941,11 @@
     }
 
     function restartFlow() {
+        // Clear any existing intervals
+        stopPaymentChecking();
+        if (state.timerInterval) clearInterval(state.timerInterval);
+        
+        // Reset state
         state = {
             currentStep: 1,
             selectedPlan: '30',
@@ -898,6 +956,7 @@
             checkingPayment: false,
             checkInterval: null,
             checkStartTime: null,
+            checkAttempts: 0,
             expiryTime: 30 * 60,
             timerInterval: null
         };
@@ -912,6 +971,10 @@
         
         document.getElementById('statusContainer').innerHTML = '';
         document.getElementById('statusContainer').classList.remove('active');
+        
+        // Reset timer display
+        document.getElementById('expiryTimer').textContent = '30:00';
+        document.getElementById('expiryTimer').style.color = '#10b981';
     }
 
     // Status Display
