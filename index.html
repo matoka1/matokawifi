@@ -256,7 +256,7 @@
         </div>
     </div>
 
-  <script>
+<script>
     // PORTAL DETECTION
     (function() {
         // Check if accessed via captive portal
@@ -287,14 +287,16 @@
         // Payment Verification Webhook
         PAYMENT_WEBHOOK_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/payment-webhook',
         
-        // Supabase Database (Direct REST API)
+        // Supabase Database
         SUPABASE_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co',
         SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iZmJkZWh6dmJ4emt0cnhhdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjczMzQsImV4cCI6MjA4MDYwMzMzNH0.R90SdMa_lv-24qmzIcvKcm_qJMbH2nU8pGhej99T7Q0',
         
-        // Supabase Tables
+        // Table names
         TABLES: {
             PAYMENTS: 'payments',
-            WIFI_SESSIONS: 'wifi_sessions'
+            WIFI_SESSIONS: 'wifi_sessions',
+            MAC_ADDRESSES: 'mac_addresses',
+            ADMIN_LOGS: 'admin_logs'
         },
         
         WIFI_SSID: 'Matoka Wifi',
@@ -447,24 +449,26 @@
                     'Prefer': 'return=minimal'
                 },
                 body: JSON.stringify({
+                    transaction_id: paymentData.transactionId,
                     phone: paymentData.phone,
                     amount: paymentData.amount,
                     plan: paymentData.plan,
-                    transaction_id: paymentData.transactionId,
                     status: 'pending',
-                    created_at: new Date().toISOString()
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
                 })
             });
             
             if (response.ok) {
-                console.log('Payment stored in Supabase:', paymentData);
+                console.log('✅ Payment stored in Supabase:', paymentData);
                 return true;
             } else {
-                console.error('Failed to store payment in Supabase:', await response.text());
+                const error = await response.text();
+                console.error('❌ Failed to store payment in Supabase:', error);
                 return false;
             }
         } catch (error) {
-            console.error('Supabase storage error:', error);
+            console.error('❌ Supabase storage error:', error);
             return false;
         }
     }
@@ -488,20 +492,23 @@
             });
             
             if (response.ok) {
-                console.log(`Payment ${transactionId} updated to ${status}`);
+                console.log(`✅ Payment ${transactionId} updated to ${status}`);
                 return true;
             } else {
-                console.error('Failed to update payment status:', await response.text());
+                const error = await response.text();
+                console.error('❌ Failed to update payment status:', error);
                 return false;
             }
         } catch (error) {
-            console.error('Supabase update error:', error);
+            console.error('❌ Supabase update error:', error);
             return false;
         }
     }
 
     async function createWiFiSession(paymentData) {
         try {
+            const expiresAt = new Date(Date.now() + (CONFIG.PLANS[paymentData.plan].duration * 60 * 1000));
+            
             const response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.TABLES.WIFI_SESSIONS}`, {
                 method: 'POST',
                 headers: {
@@ -518,20 +525,50 @@
                     duration_minutes: CONFIG.PLANS[paymentData.plan].duration,
                     status: 'active',
                     created_at: new Date().toISOString(),
-                    expires_at: new Date(Date.now() + (CONFIG.PLANS[paymentData.plan].duration * 60 * 1000)).toISOString()
+                    expires_at: expiresAt.toISOString(),
+                    activated_at: null // Will be set when MAC is added
                 })
             });
             
             if (response.ok) {
-                console.log('WiFi session created in Supabase');
+                console.log('✅ WiFi session created in Supabase');
                 return true;
             } else {
-                console.error('Failed to create WiFi session:', await response.text());
+                const error = await response.text();
+                console.error('❌ Failed to create WiFi session:', error);
                 return false;
             }
         } catch (error) {
-            console.error('Supabase session creation error:', error);
+            console.error('❌ Supabase session creation error:', error);
             return false;
+        }
+    }
+
+    async function logAdminAction(action, details) {
+        try {
+            const response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.TABLES.ADMIN_LOGS}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': CONFIG.SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify({
+                    action: action,
+                    admin_user: 'system',
+                    phone: details.phone || null,
+                    mac_address: details.mac || null,
+                    details: details,
+                    created_at: new Date().toISOString()
+                })
+            });
+            
+            if (response.ok) {
+                console.log(`✅ Admin action logged: ${action}`);
+            }
+        } catch (error) {
+            console.error('❌ Failed to log admin action:', error);
         }
     }
 
@@ -568,7 +605,7 @@
             // Show initial status
             showStatus('processing', 'Sending STK Push...', 'Please wait while we send payment request to your phone');
             
-            console.log('Sending STK Push request:', {
+            console.log('📤 Sending STK Push request:', {
                 phone: normalizedPhone,
                 amount: state.amount,
                 plan: state.selectedPlan
@@ -588,29 +625,29 @@
                 })
             });
             
-            console.log('STK Push response status:', response.status);
+            console.log('📥 STK Push response status:', response.status);
             
             // Get response text first
             const responseText = await response.text();
-            console.log('STK Push response text:', responseText);
+            console.log('📥 STK Push response text:', responseText);
             
             let data;
             try {
                 data = JSON.parse(responseText);
-                console.log('STK Push parsed data:', data);
+                console.log('📊 STK Push parsed data:', data);
             } catch (parseError) {
-                console.error('Failed to parse JSON:', parseError);
+                console.error('❌ Failed to parse JSON:', parseError);
                 throw new Error('Invalid response from payment server');
             }
             
             if (!response.ok) {
-                console.error('STK Push API error:', data);
+                console.error('❌ STK Push API error:', data);
                 throw new Error(data.error || data.message || data.errorMessage || 'Payment initiation failed');
             }
             
             // Save transaction ID
             state.transactionId = data.data?.transactionId || data.transactionId || data.checkoutRequestID || `TXN_${Date.now()}`;
-            console.log('Transaction ID:', state.transactionId);
+            console.log('💳 Transaction ID:', state.transactionId);
             
             // Store payment in Supabase (pending status)
             const paymentData = {
@@ -622,6 +659,14 @@
             
             await storePaymentInSupabase(paymentData);
             
+            // Log admin action
+            await logAdminAction('initiate_payment', {
+                phone: normalizedPhone,
+                amount: state.amount,
+                plan: state.selectedPlan,
+                transactionId: state.transactionId
+            });
+            
             // Update status
             showStatus('waiting', 'Check Your Phone', 'Enter your M-Pesa PIN on the prompt. We\'ll verify payment automatically.');
             
@@ -629,7 +674,7 @@
             startPaymentChecking();
             
         } catch (error) {
-            console.error('Payment initiation error:', error);
+            console.error('❌ Payment initiation error:', error);
             
             // Show detailed error to user
             let errorMessage = error.message;
@@ -663,6 +708,13 @@
             // Update payment status in Supabase
             await updatePaymentStatus(state.transactionId, 'timeout');
             
+            // Log admin action
+            await logAdminAction('payment_timeout', {
+                transactionId: state.transactionId,
+                phone: state.phone,
+                amount: state.amount
+            });
+            
             return;
         }
         
@@ -681,16 +733,16 @@
                 })
             });
             
-            console.log('Payment check response status:', response.status);
+            console.log('🔍 Payment check response status:', response.status);
             
             const responseText = await response.text();
-            console.log('Payment check response:', responseText);
+            console.log('🔍 Payment check response:', responseText);
             
             let data;
             try {
                 data = JSON.parse(responseText);
             } catch (parseError) {
-                console.error('Failed to parse payment check JSON:', parseError);
+                console.error('❌ Failed to parse payment check JSON:', parseError);
                 return; // Continue checking
             }
             
@@ -710,6 +762,15 @@
                     transactionId: state.transactionId
                 });
                 
+                // Log admin action
+                await logAdminAction('payment_completed', {
+                    transactionId: state.transactionId,
+                    phone: state.phone,
+                    amount: state.amount,
+                    plan: state.selectedPlan,
+                    mpesaReceipt: data.mpesaReceipt
+                });
+                
                 // Wait 2 seconds then complete
                 setTimeout(() => {
                     completePayment();
@@ -722,6 +783,14 @@
                 
                 // Update payment status in Supabase
                 await updatePaymentStatus(state.transactionId, 'failed');
+                
+                // Log admin action
+                await logAdminAction('payment_failed', {
+                    transactionId: state.transactionId,
+                    phone: state.phone,
+                    amount: state.amount,
+                    reason: data.message
+                });
                 
                 // Reset state
                 state.paymentInProgress = false;
@@ -740,7 +809,7 @@
             }
             
         } catch (error) {
-            console.error('Payment check error:', error);
+            console.error('❌ Payment check error:', error);
             // Continue checking on error
             const elapsedSeconds = Math.floor((Date.now() - state.checkStartTime) / 1000);
             showStatus('waiting', 'Checking...', `Payment verification in progress (${elapsedSeconds}s)`);
@@ -808,6 +877,13 @@
         // Update payment status in Supabase if transaction exists
         if (state.transactionId) {
             updatePaymentStatus(state.transactionId, 'cancelled');
+            
+            // Log admin action
+            logAdminAction('payment_cancelled', {
+                transactionId: state.transactionId,
+                phone: state.phone,
+                amount: state.amount
+            });
         }
     }
 
