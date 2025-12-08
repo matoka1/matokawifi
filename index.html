@@ -284,10 +284,7 @@
             // STK Push API
             SUPABASE_FUNCTION_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/stk-push',
             
-            // Payment Verification - USE payment-check endpoint
-            PAYMENT_CHECK_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co/functions/v1/payment-check',
-            
-            // Supabase Database
+            // Payment Verification - USE SUPABASE DIRECT QUERY
             SUPABASE_URL: 'https://mbfbdehzvbxzktrxauuu.supabase.co',
             SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iZmJkZWh6dmJ4emt0cnhhdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjczMzQsImV4cCI6MjA4MDYwMzMzNH0.R90SdMa_lv-24qmzIcvKcm_qJMbH2nU8pGhej99T7Q0',
             
@@ -311,8 +308,8 @@
             },
             
             // Payment checking intervals
-            CHECK_INTERVAL: 2000, // 2 seconds
-            MAX_CHECK_TIME: 180000 // 3 minutes
+            CHECK_INTERVAL: 3000, // 3 seconds
+            MAX_CHECK_TIME: 300000 // 5 minutes
         };
 
         // State
@@ -441,6 +438,8 @@
         // SUPABASE DATABASE FUNCTIONS
         async function storePaymentInSupabase(paymentData) {
             try {
+                console.log('💾 Storing payment in Supabase:', paymentData);
+                
                 const response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.TABLES.PAYMENTS}`, {
                     method: 'POST',
                     headers: {
@@ -461,7 +460,7 @@
                 });
                 
                 if (response.ok) {
-                    console.log('✅ Payment stored in Supabase:', paymentData);
+                    console.log('✅ Payment stored in Supabase');
                     return true;
                 } else {
                     const error = await response.text();
@@ -479,7 +478,7 @@
                 // Convert frontend status to database status
                 let dbStatus = status;
                 if (status === 'completed') {
-                    dbStatus = 'success'; // Database uses 'success' not 'completed'
+                    dbStatus = 'success';
                 }
                 
                 const updates = {
@@ -494,6 +493,8 @@
                 if (dbStatus === 'success') {
                     updates.completed_at = new Date().toISOString();
                 }
+                
+                console.log(`📝 Updating payment ${transactionId} to ${dbStatus}`);
                 
                 const response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.TABLES.PAYMENTS}?transaction_id=eq.${transactionId}`, {
                     method: 'PATCH',
@@ -556,34 +557,6 @@
             } catch (error) {
                 console.error('❌ Supabase session creation error:', error);
                 return false;
-            }
-        }
-
-        async function logAdminAction(action, details) {
-            try {
-                const response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.TABLES.ADMIN_LOGS}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': CONFIG.SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify({
-                        action: action,
-                        admin_user: 'system',
-                        phone: details.phone || null,
-                        mac_address: details.mac || null,
-                        details: details,
-                        created_at: new Date().toISOString()
-                    })
-                });
-                
-                if (response.ok) {
-                    console.log(`✅ Admin action logged: ${action}`);
-                }
-            } catch (error) {
-                console.error('❌ Failed to log admin action:', error);
             }
         }
 
@@ -660,16 +633,15 @@
                     throw new Error(data.error || data.message || data.errorMessage || 'Payment initiation failed');
                 }
                 
-                // Extract transaction ID from nested response
-                const transactionId = data.data?.data?.transactionId || 
-                                    data.data?.checkoutRequestID || 
+                // Extract transaction ID from response
+                const transactionId = data.CheckoutRequestID || 
                                     data.checkoutRequestID || 
-                                    data.transactionId || 
+                                    data.data?.CheckoutRequestID ||
+                                    data.data?.checkoutRequestID ||
                                     `TXN_${Date.now()}`;
                 
                 state.transactionId = transactionId;
-                console.log('💳 Extracted Transaction ID:', transactionId);
-                console.log('Full response structure:', JSON.stringify(data, null, 2));
+                console.log('💳 Transaction ID:', transactionId);
                 
                 // Store payment in Supabase (pending status)
                 const paymentData = {
@@ -681,19 +653,13 @@
                 
                 await storePaymentInSupabase(paymentData);
                 
-                // Log admin action
-                await logAdminAction('initiate_payment', {
-                    phone: normalizedPhone,
-                    amount: state.amount,
-                    plan: state.selectedPlan,
-                    transactionId: state.transactionId
-                });
-                
                 // Update status
                 showStatus('waiting', 'Check Your Phone', 'Enter your M-PESA PIN when prompted. Payment verification will start in 5 seconds...');
                 
-                // Start checking payment status
-                startPaymentChecking();
+                // Start checking payment status after 5 seconds
+                setTimeout(() => {
+                    startPaymentChecking();
+                }, 5000);
                 
             } catch (error) {
                 console.error('❌ Payment initiation error:', error);
@@ -720,68 +686,49 @@
             }
         }
 
-        // PAYMENT CHECKING FUNCTION
+        // FIXED: PAYMENT CHECKING FUNCTION - DIRECT SUPABASE QUERY
         async function checkPaymentStatus() {
             // Maximum check time
             if (Date.now() - state.checkStartTime > CONFIG.MAX_CHECK_TIME) {
                 stopPaymentChecking();
-                showStatus('error', 'Payment Timeout', 'Payment verification timed out after 3 minutes. Please contact support if payment was deducted.');
+                showStatus('error', 'Payment Timeout', 'Payment verification timed out after 5 minutes. Please contact support if payment was deducted.');
                 
                 // Update payment status in Supabase
                 await updatePaymentStatus(state.transactionId, 'timeout');
-                
-                // Log admin action
-                await logAdminAction('payment_timeout', {
-                    transactionId: state.transactionId,
-                    phone: state.phone,
-                    amount: state.amount,
-                    elapsedTime: Math.floor((Date.now() - state.checkStartTime) / 1000)
-                });
-                
                 return;
             }
             
             try {
                 state.checkAttempts++;
-                console.log(`🔍 Payment check attempt #${state.checkAttempts}`);
+                console.log(`🔍 Payment check attempt #${state.checkAttempts} for transaction: ${state.transactionId}`);
                 
-                // Check payment status via payment-check endpoint
-                const response = await fetch(CONFIG.PAYMENT_CHECK_URL, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-                    },
-                    body: JSON.stringify({
-                        transactionId: state.transactionId,
-                        phone: state.phone,
-                        amount: state.amount,
-                        plan: state.selectedPlan
-                    })
-                });
+                // DIRECT SUPABASE QUERY - Query payments table directly
+                const response = await fetch(
+                    `${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.TABLES.PAYMENTS}?transaction_id=eq.${state.transactionId}&select=*`,
+                    {
+                        headers: {
+                            'apikey': CONFIG.SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+                        }
+                    }
+                );
                 
-                console.log('🔍 Payment check response status:', response.status);
+                console.log('🔍 Supabase query response status:', response.status);
                 
-                const responseText = await response.text();
-                console.log('🔍 Payment check response:', responseText);
-                
-                let data;
-                try {
-                    data = JSON.parse(responseText);
-                } catch (parseError) {
-                    console.error('❌ Failed to parse payment check JSON:', parseError);
-                    return; // Continue checking
+                if (!response.ok) {
+                    throw new Error(`Supabase query failed: ${response.status}`);
                 }
                 
-                if (response.ok) {
-                    // IMPORTANT: Check for 'success' status (database uses 'success', not 'completed')
-                    if (data.status === 'success' || data.success === true) {
+                const payments = await response.json();
+                
+                if (payments && payments.length > 0) {
+                    const payment = payments[0];
+                    console.log('🔍 Payment record found:', payment);
+                    
+                    if (payment.status === 'success') {
                         // PAYMENT CONFIRMED!
                         stopPaymentChecking();
                         showStatus('success', 'Payment Verified!', 'Your payment has been confirmed successfully.');
-                        
-                        // Update payment status in Supabase to success
-                        await updatePaymentStatus(state.transactionId, 'success', data.mpesaReceipt);
                         
                         // Create WiFi session in Supabase
                         await createWiFiSession({
@@ -791,15 +738,6 @@
                             transactionId: state.transactionId
                         });
                         
-                        // Log admin action
-                        await logAdminAction('payment_completed', {
-                            transactionId: state.transactionId,
-                            phone: state.phone,
-                            amount: state.amount,
-                            plan: state.selectedPlan,
-                            mpesaReceipt: data.mpesaReceipt
-                        });
-                        
                         // Wait 2 seconds then complete
                         setTimeout(() => {
                             completePayment();
@@ -807,21 +745,10 @@
                         
                         return;
                         
-                    } else if (data.status === 'failed') {
+                    } else if (payment.status === 'failed') {
                         // Payment failed or cancelled
                         stopPaymentChecking();
-                        showStatus('error', 'Payment Failed', data.message || 'Payment was not completed. Please try again.');
-                        
-                        // Update payment status in Supabase
-                        await updatePaymentStatus(state.transactionId, 'failed');
-                        
-                        // Log admin action
-                        await logAdminAction('payment_failed', {
-                            transactionId: state.transactionId,
-                            phone: state.phone,
-                            amount: state.amount,
-                            reason: data.message
-                        });
+                        showStatus('error', 'Payment Failed', payment.mpesa_receipt || 'Payment was not completed. Please try again.');
                         
                         // Reset state
                         state.paymentInProgress = false;
@@ -830,7 +757,7 @@
                         
                         return;
                         
-                    } else if (data.status === 'pending') {
+                    } else if (payment.status === 'pending') {
                         // Still processing
                         const elapsedSeconds = Math.floor((Date.now() - state.checkStartTime) / 1000);
                         const elapsedMinutes = Math.floor(elapsedSeconds / 60);
@@ -849,9 +776,10 @@
                             `${statusMessage}<br>
                             Transaction: ${state.transactionId ? state.transactionId.substring(0, 12) + '...' : 'Processing...'}`);
                     }
-                    
                 } else {
-                    console.error('Payment check HTTP error:', response.status, data);
+                    console.log('🔍 No payment record found yet');
+                    const elapsedSeconds = Math.floor((Date.now() - state.checkStartTime) / 1000);
+                    showStatus('waiting', 'Processing...', `Waiting for payment confirmation (${elapsedSeconds}s)`);
                 }
                 
             } catch (error) {
@@ -871,7 +799,7 @@
             
             console.log(`⏱️ Starting payment check at: ${new Date().toLocaleTimeString()}`);
             
-            // Start checking immediately (every 2 seconds)
+            // Start checking immediately
             checkPaymentStatus();
             state.checkInterval = setInterval(checkPaymentStatus, CONFIG.CHECK_INTERVAL);
         }
@@ -928,13 +856,6 @@
             // Update payment status in Supabase if transaction exists
             if (state.transactionId) {
                 updatePaymentStatus(state.transactionId, 'cancelled');
-                
-                // Log admin action
-                logAdminAction('payment_cancelled', {
-                    transactionId: state.transactionId,
-                    phone: state.phone,
-                    amount: state.amount
-                });
             }
         }
 
@@ -971,7 +892,7 @@
             document.getElementById('statusContainer').classList.remove('active');
             
             // Reset timer display
-            document.getElementById('expiryTimer').textContent = '30:00';
+            document.getElementById('expiryTimer').textContent = '00:30:00';
             document.getElementById('expiryTimer').style.color = '#10b981';
         }
 
@@ -1016,6 +937,8 @@
         function startExpiryTimer() {
             if (state.timerInterval) clearInterval(state.timerInterval);
             
+            updateTimerDisplay();
+            
             state.timerInterval = setInterval(() => {
                 if (state.expiryTime <= 0) {
                     clearInterval(state.timerInterval);
@@ -1025,18 +948,23 @@
                 }
                 
                 state.expiryTime--;
-                
-                const hours = Math.floor(state.expiryTime / 3600);
-                const minutes = Math.floor((state.expiryTime % 3600) / 60);
-                const seconds = state.expiryTime % 60;
-                
-                document.getElementById('expiryTimer').textContent = 
-                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                    
-                if (minutes < 5 && hours === 0) {
-                    document.getElementById('expiryTimer').style.color = '#f59e0b';
-                }
+                updateTimerDisplay();
             }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const hours = Math.floor(state.expiryTime / 3600);
+            const minutes = Math.floor((state.expiryTime % 3600) / 60);
+            const seconds = state.expiryTime % 60;
+            
+            document.getElementById('expiryTimer').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+            if (state.expiryTime < 300) { // Less than 5 minutes
+                document.getElementById('expiryTimer').style.color = '#f59e0b';
+            } else {
+                document.getElementById('expiryTimer').style.color = '#10b981';
+            }
         }
 
         // Copy to Clipboard
@@ -1055,6 +983,40 @@
                 console.error('Copy failed:', err);
             });
         }
+
+        // Debug function (can be called from browser console)
+        window.debugPayment = async function() {
+            console.log('=== DEBUG PAYMENT STATUS ===');
+            console.log('Current State:', state);
+            
+            if (state.transactionId) {
+                try {
+                    const response = await fetch(
+                        `${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.TABLES.PAYMENTS}?transaction_id=eq.${state.transactionId}&select=*`,
+                        {
+                            headers: {
+                                'apikey': CONFIG.SUPABASE_ANON_KEY,
+                                'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+                            }
+                        }
+                    );
+                    
+                    const payments = await response.json();
+                    console.log('Payment Record:', payments);
+                    
+                    if (payments && payments.length > 0) {
+                        alert(`Payment Status: ${payments[0].status}\nCheck console for details`);
+                    } else {
+                        alert('No payment record found');
+                    }
+                } catch (error) {
+                    console.error('Debug error:', error);
+                    alert('Debug failed: ' + error.message);
+                }
+            } else {
+                alert('No transaction ID available');
+            }
+        };
     </script>
 </body>
 </html>
